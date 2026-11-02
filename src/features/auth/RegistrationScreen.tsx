@@ -30,7 +30,7 @@ export function RegistrationScreen({
   const [ownerName, setOwnerName] = useState('');
   const [phone, setPhone] = useState(route.params.phone);
   const [error, setError] = useState('');
-  const { photo, selectPhoto } = useProfilePhoto();
+  const { photo, selectPhoto, picking } = useProfilePhoto();
   const { register } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -42,7 +42,7 @@ export function RegistrationScreen({
   const passwordInput = useRef<TextInputInstance>(null);
   const confirmPasswordInput = useRef<TextInputInstance>(null);
   const handleRegister = async () => {
-    if (inFlight.current) return;
+    if (inFlight.current || picking) return;
     inFlight.current = true;
     setBusy(true);
     setError('');
@@ -103,6 +103,7 @@ export function RegistrationScreen({
           <AppButton
             onPress={handleRegister}
             loading={busy}
+            disabled={picking}
             style={styles.submit}
           >
             {t('auth.createAccount')}
@@ -110,7 +111,11 @@ export function RegistrationScreen({
         </View>
       }
     >
-      <PhotoPicker photo={photo?.uri} onPress={selectPhoto} />
+      <PhotoPicker
+        photo={photo?.uri}
+        onPress={selectPhoto}
+        disabled={busy || picking}
+      />
       <AppInput
         label={t('auth.restaurantName')}
         value={restaurantName}

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Breads — RestoFlow</title>
+  <desc>Naan and roti, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <circle cx="253" cy="231" r="86" fill="#D39B55"/>
+  <circle cx="251" cy="226" r="79" fill="#E4AF68"/>
+  <ellipse cx="216" cy="211" rx="6" ry="4" fill="#C48A49"/>
+  <ellipse cx="241" cy="173" rx="6" ry="3.5" fill="#C48A49"/>
+  <ellipse cx="195" cy="247" rx="5" ry="3.5" fill="#C48A49"/>
+  <ellipse cx="221" cy="281" rx="6" ry="3.5" fill="#C48A49"/>
+  <path d="M221 314C195 305 189 285 200 261C216 228 253 189 279 148C290 130 309 133 322 151C339 174 350 204 361 239C373 274 353 304 323 315C291 328 248 325 221 314Z" fill="#D29A52"/>
+  <path d="M222 306C203 299 200 283 210 262C226 231 260 194 286 153C295 139 305 143 314 156C331 180 342 209 353 241C363 270 347 294 319 305C289 317 247 316 222 306Z" fill="#EAC184"/>
+  <ellipse cx="299" cy="174" rx="7" ry="4" transform="rotate(-30 299 174)" fill="#BB8144"/>
+  <ellipse cx="270" cy="206" rx="8" ry="4" transform="rotate(-25 270 206)" fill="#C28A4B"/>
+  <ellipse cx="313" cy="222" rx="8" ry="4.5" transform="rotate(23 313 222)" fill="#BB8144"/>
+  <ellipse cx="244" cy="249" rx="7" ry="4" transform="rotate(-30 244 249)" fill="#BB8144"/>
+  <ellipse cx="285" cy="266" rx="9" ry="4.5" transform="rotate(12 285 266)" fill="#C28A4B"/>
+  <ellipse cx="328" cy="279" rx="7" ry="4" transform="rotate(25 328 279)" fill="#BB8144"/>
+  <ellipse cx="240" cy="291" rx="7" ry="4" fill="#C28A4B"/>
+  <path d="M272 231L281 226M296 244L302 249M266 284L275 280M316 194L321 200" stroke="#62724E" stroke-width="4" stroke-linecap="round"/>
+  <path d="M296 275L310 272L313 285L298 288Z" fill="#F5DBA0"/>
+  </g>
+</svg>

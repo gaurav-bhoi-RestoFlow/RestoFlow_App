@@ -19,12 +19,13 @@ export function EditProfileScreen({
 }: RootScreenProps<'EditProfile'>) {
   const { t } = useTranslation();
   const { session, updateProfile } = useSession();
-  const [name, setName] = useState(session?.name ?? '');
+  const [nameDraft, setNameDraft] = useState<string | null>(null);
+  // Untouched fields follow a refreshed profile; preserve edits in progress.
+  const name = nameDraft ?? session?.name ?? '';
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [picking, setPicking] = useState(false);
   const inFlight = useRef(false);
-  const { photo, selectPhoto } = useProfilePhoto();
+  const { photo, selectPhoto, picking } = useProfilePhoto();
   const showFeedback = useFeedback();
   const hasChanges = !!photo || name.trim() !== session?.name;
   const handleSave = async () => {
@@ -75,21 +76,14 @@ export function EditProfileScreen({
         photo={photo?.uri ?? session?.photo}
         label={t('settings.changePhoto')}
         disabled={busy || picking}
-        onPress={async () => {
-          setPicking(true);
-          try {
-            await selectPhoto();
-          } finally {
-            setPicking(false);
-          }
-        }}
+        onPress={selectPhoto}
       />
       <AppInput
         label={t('auth.yourName')}
         value={name}
         editable={!busy}
         onChangeText={value => {
-          setName(value);
+          setNameDraft(value);
           setError('');
         }}
         autoCapitalize="words"

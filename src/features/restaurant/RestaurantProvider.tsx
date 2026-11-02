@@ -155,7 +155,16 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
   return (
     <RestaurantContext.Provider
       value={{
-        restaurant: available ? restaurant : null,
+        restaurant: available
+          ? session?.role === 'owner'
+            ? {
+                ...restaurant,
+                owner: session.name,
+                phone: session.phone,
+                photo: session.photo,
+              }
+            : restaurant
+          : null,
         refresh,
         refreshing,
         updateMenu,

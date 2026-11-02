@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Rice — RestoFlow</title>
+  <desc>Jeera rice, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <ellipse cx="280" cy="258" rx="109" ry="65" fill="#D8CEB9"/>
+  <path d="M175 255C180 211 215 179 261 176C314 171 365 202 383 252C389 277 351 306 281 308C219 308 175 285 175 255Z" fill="#FFFDF6"/>
+  <path d="M181 264C204 282 243 291 283 290C328 290 361 277 380 259C373 286 337 302 281 303C232 303 193 288 181 264Z" fill="#F3EDD9"/>
+<rect x="239" y="188.8" width="14" height="4.4" rx="2.2" transform="rotate(-12 246 191)" fill="#DCCEB1"/>
+<rect x="261" y="186.8" width="14" height="4.4" rx="2.2" transform="rotate(17 268 189)" fill="#E8DEC7"/>
+<rect x="286" y="188.8" width="14" height="4.4" rx="2.2" transform="rotate(-20 293 191)" fill="#E8DEC7"/>
+<rect x="308" y="196.8" width="14" height="4.4" rx="2.2" transform="rotate(21 315 199)" fill="#DCCEB1"/>
+<rect x="217" y="202.8" width="14" height="4.4" rx="2.2" transform="rotate(-22 224 205)" fill="#E8DEC7"/>
+<rect x="241" y="207.8" width="14" height="4.4" rx="2.2" transform="rotate(25 248 210)" fill="#E8DEC7"/>
+<rect x="267" y="202.8" width="14" height="4.4" rx="2.2" transform="rotate(-15 274 205)" fill="#DCCEB1"/>
+<rect x="292" y="210.8" width="14" height="4.4" rx="2.2" transform="rotate(17 299 213)" fill="#E8DEC7"/>
+<rect x="324" y="212.8" width="14" height="4.4" rx="2.2" transform="rotate(-23 331 215)" fill="#E8DEC7"/>
+<rect x="198" y="225.8" width="14" height="4.4" rx="2.2" transform="rotate(17 205 228)" fill="#DCCEB1"/>
+<rect x="223" y="226.8" width="14" height="4.4" rx="2.2" transform="rotate(-19 230 229)" fill="#E8DEC7"/>
+<rect x="249" y="226.8" width="14" height="4.4" rx="2.2" transform="rotate(11 256 229)" fill="#E8DEC7"/>
+<rect x="275" y="227.8" width="14" height="4.4" rx="2.2" transform="rotate(-21 282 230)" fill="#DCCEB1"/>
+<rect x="301" y="231.8" width="14" height="4.4" rx="2.2" transform="rotate(19 308 234)" fill="#E8DEC7"/>
+<rect x="342" y="235.8" width="14" height="4.4" rx="2.2" transform="rotate(-18 349 238)" fill="#E8DEC7"/>
+<rect x="208" y="248.8" width="14" height="4.4" rx="2.2" transform="rotate(-16 215 251)" fill="#DCCEB1"/>
+<rect x="233" y="251.8" width="14" height="4.4" rx="2.2" transform="rotate(20 240 254)" fill="#E8DEC7"/>
+<rect x="259" y="248.8" width="14" height="4.4" rx="2.2" transform="rotate(-24 266 251)" fill="#E8DEC7"/>
+<rect x="285" y="254.8" width="14" height="4.4" rx="2.2" transform="rotate(17 292 257)" fill="#DCCEB1"/>
+<rect x="313" y="253.8" width="14" height="4.4" rx="2.2" transform="rotate(-15 320 256)" fill="#E8DEC7"/>
+<rect x="335" y="258.8" width="14" height="4.4" rx="2.2" transform="rotate(22 342 261)" fill="#E8DEC7"/>
+<rect x="222" y="272.8" width="14" height="4.4" rx="2.2" transform="rotate(16 229 275)" fill="#DCCEB1"/>
+<rect x="247" y="275.8" width="14" height="4.4" rx="2.2" transform="rotate(-16 254 278)" fill="#E8DEC7"/>
+<rect x="273" y="276.8" width="14" height="4.4" rx="2.2" transform="rotate(19 280 279)" fill="#E8DEC7"/>
+<rect x="300" y="276.8" width="14" height="4.4" rx="2.2" transform="rotate(-22 307 279)" fill="#DCCEB1"/>
+  <path d="M267 220C249 204 245 223 265 231C275 232 278 225 267 220Z" fill="#62724E"/>
+  <path d="M272 223C271 201 291 206 283 225C280 231 273 232 272 223Z" fill="#7E8D62"/>
+  <path d="M278 227C294 212 305 230 285 235C278 237 274 234 278 227Z" fill="#62724E"/>
+  <path d="M231 240L235 245M309 244L312 250M254 266L258 271M300 202L304 207M322 275L326 279" stroke="#92724A" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

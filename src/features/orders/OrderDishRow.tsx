@@ -14,7 +14,12 @@ export function OrderDishRow({
   onChange,
   disabled = false,
 }: {
-  dish: { name: string; unitPrice: string; imageUrl?: string };
+  dish: {
+    name: string;
+    unitPrice: string;
+    imageUrl?: string;
+    category?: string;
+  };
   quantity: number;
   onChange: (change: number) => void;
   disabled?: boolean;
@@ -25,11 +30,13 @@ export function OrderDishRow({
   return (
     <View style={[styles.row, compact && styles.compact]}>
       <View style={styles.food}>
-        <DishImage uri={dish.imageUrl} />
+        <DishImage uri={dish.imageUrl} category={dish.category} />
       </View>
       <View style={styles.info}>
-        <AppText style={styles.name}>{dish.name}</AppText>
-        <AppText muted style={styles.price}>
+        <AppText numberOfLines={1} style={styles.name}>
+          {dish.name}
+        </AppText>
+        <AppText muted numberOfLines={1} style={styles.price}>
           {formatCurrency(dish.unitPrice)}
         </AppText>
       </View>
@@ -74,7 +81,9 @@ export function OrderDishRow({
             style={styles.add}
           >
             <Icon name="plus" size={14} />
-            <AppText style={styles.addLabel}>{t('orders.add')}</AppText>
+            <AppText numberOfLines={1} style={styles.addLabel}>
+              {t('orders.add')}
+            </AppText>
           </Pressable>
         )}
       </View>

@@ -1,45 +1,64 @@
 import React, { useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
-import { Icon } from '../../components/Icon';
-import Paneer from '../../../assets/illustrations/paneer.svg';
-import Dal from '../../../assets/illustrations/dal.svg';
-import Rice from '../../../assets/illustrations/rice.svg';
-import Roti from '../../../assets/illustrations/roti.svg';
-import Naan from '../../../assets/illustrations/naan.svg';
-import Coke from '../../../assets/illustrations/coke.svg';
+import { Image, StyleSheet } from 'react-native';
+import { artworkCategory, getCategoryArtwork } from './categoryArtwork';
 
-const illustrations = {
-  paneer: Paneer,
-  dal: Dal,
-  rice: Rice,
-  roti: Roti,
-  naan: Naan,
-  coke: Coke,
-};
-export function DishImage({ uri }: { uri?: string }) {
-  const [failedUri, setFailedUri] = useState<string>();
-  const illustration = uri?.startsWith('illustration:')
-    ? uri.slice(13)
+// Legacy illustration: URIs and unsupported schemes are UI defaults, never photos.
+export function dishPhotoUri(uri?: string | null) {
+  const value = uri?.trim();
+  if (!value || /\.svg(?:[?#]|$)/i.test(value)) return undefined;
+  return /^https?:\/\/[^/\s?#]+(?:[/?#][^\r\n]*)?$/i.test(value) ||
+    /^(?:file|content|ph|assets-library):\/\/[^\r\n]+$/i.test(value) ||
+    /^data:image\/(?:jpeg|png|webp);base64,[a-z\d+/=]+$/i.test(value)
+    ? value
     : undefined;
-  const Asset = illustration
-    ? illustrations[illustration as keyof typeof illustrations]
-    : undefined;
-  if (Asset) return <Asset width="100%" height="100%" />;
-  return uri && failedUri !== uri ? (
+}
+
+export function DishImage({
+  uri,
+  category,
+}: {
+  uri?: string | null;
+  category?: string | null;
+}) {
+  const photo = dishPhotoUri(uri);
+  // Remount on source changes, including A -> B -> A after A failed.
+  return (
+    <DishImageSource key={photo ?? 'artwork'} uri={photo} category={category} />
+  );
+}
+
+function DishImageSource({
+  uri,
+  category,
+}: {
+  uri?: string;
+  category?: string | null;
+}) {
+  const [failed, setFailed] = useState(false);
+  const Artwork = getCategoryArtwork(category);
+  return uri && !failed ? (
     <Image
       source={{ uri }}
       style={styles.image}
       resizeMode="cover"
-      onError={() => setFailedUri(uri)}
+      onError={() => setFailed(true)}
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
     />
   ) : (
-    <View style={styles.placeholder}>
-      <Icon name="cutlery" size={28} />
-    </View>
+    <Artwork
+      testID={`dish-artwork-${artworkCategory(category)}`}
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMid meet"
+      accessible={false}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+    />
   );
 }
 
 const styles = StyleSheet.create({
   image: { width: '100%', height: '100%' },
-  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

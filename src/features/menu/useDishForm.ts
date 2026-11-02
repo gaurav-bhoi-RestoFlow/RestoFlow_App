@@ -3,7 +3,8 @@ import { Keyboard } from 'react-native';
 import { normalizeApiError } from '../../api/errors';
 import type { Dish, ProfilePhoto } from '../restaurant/types';
 import { useMenu } from './MenuProvider';
-import { dishIllustration, dishLimits } from './menuConfig';
+import { dishLimits } from './menuConfig';
+import { dishPhotoUri } from './DishImage';
 
 export interface DishDraft {
   name: string;
@@ -41,8 +42,7 @@ export function useDishForm(dish: Dish | undefined, onSaved: () => void) {
     category: dish?.category ?? 'Main Course',
     foodType: dish?.foodType ?? 'VEG',
     available: dish?.available ?? true,
-    imageUrl:
-      dish?.imageUrl ?? (dish ? dishIllustration(dish) : 'illustration:rice'),
+    imageUrl: dishPhotoUri(dish?.imageUrl) ?? '',
   }));
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -62,6 +62,15 @@ export function useDishForm(dish: Dish | undefined, onSaved: () => void) {
   }
   function selectImage(image: ProfilePhoto) {
     setDraft(current => ({ ...current, image, imageUrl: image.uri }));
+    setSaveError('');
+  }
+  function removeSelectedImage() {
+    // The API supports replacing a saved photo, but has no photo-deletion field.
+    setDraft(current => ({
+      ...current,
+      image: undefined,
+      imageUrl: dishPhotoUri(dish?.imageUrl) ?? '',
+    }));
     setSaveError('');
   }
   async function submit() {
@@ -97,6 +106,7 @@ export function useDishForm(dish: Dish | undefined, onSaved: () => void) {
     draft,
     update,
     selectImage,
+    removeSelectedImage,
     errors: submitted ? errors : { name: undefined, price: undefined },
     saving,
     saveError,

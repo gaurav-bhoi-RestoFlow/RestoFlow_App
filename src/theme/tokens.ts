@@ -10,6 +10,16 @@ export const colors = {
   food: '#f4f1e7',
   dangerSoft: '#f8eeee',
 };
+export const premiumColors = {
+  background: '#102f2a',
+  highlight: '#2b5141',
+  gold: '#ead29a',
+  goldDark: '#826326',
+  border: '#766d4b',
+  copy: '#d7e4db',
+  surface: '#f5efdf',
+  surfaceBorder: '#e8dcc0',
+};
 export const spacing = {
   xs: 4,
   sm: 8,

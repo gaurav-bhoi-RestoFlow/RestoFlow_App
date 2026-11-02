@@ -18,6 +18,7 @@ interface DraftLine {
   name: string;
   unitPrice: string;
   imageUrl?: string;
+  category?: string;
   note?: string | null;
 }
 export function useOrderDraft(tableId: string, customerId?: string) {
@@ -71,15 +72,19 @@ export function useOrderDraft(tableId: string, customerId?: string) {
     return () => controller.abort();
   }, [load]);
   const lines = useMemo<DraftLine[]>(() => {
-    const snapshots = (original?.items ?? []).map(item => ({
-      key: item.id,
-      itemId: item.id,
-      dishId: item.dishId,
-      name: item.name,
-      note: item.note,
-      unitPrice: item.unitPrice,
-      imageUrl: restaurant.menu.find(dish => dish.id === item.dishId)?.imageUrl,
-    }));
+    const snapshots = (original?.items ?? []).map(item => {
+      const dish = restaurant.menu.find(value => value.id === item.dishId);
+      return {
+        key: item.id,
+        itemId: item.id,
+        dishId: item.dishId,
+        name: item.name,
+        note: item.note,
+        unitPrice: item.unitPrice,
+        imageUrl: dish?.imageUrl,
+        category: dish?.category,
+      };
+    });
     const existingIds = new Set(snapshots.map(item => item.dishId));
     return [
       ...snapshots,
@@ -91,6 +96,7 @@ export function useOrderDraft(tableId: string, customerId?: string) {
           name: dish.name,
           unitPrice: dish.price.toFixed(2),
           imageUrl: dish.imageUrl,
+          category: dish.category,
         })),
     ];
   }, [original, restaurant.menu]);

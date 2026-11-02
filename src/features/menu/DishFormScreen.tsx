@@ -106,8 +106,16 @@ function DishForm({
   navigation: RootScreenProps<'DishForm'>['navigation'];
 }) {
   const { t } = useTranslation();
-  const { draft, update, selectImage, errors, saving, saveError, submit } =
-    useDishForm(dish, navigation.goBack);
+  const {
+    draft,
+    update,
+    selectImage,
+    removeSelectedImage,
+    errors,
+    saving,
+    saveError,
+    submit,
+  } = useDishForm(dish, navigation.goBack);
   const [sheet, setSheet] = useState<'category' | 'image' | null>(null);
   const nameInput = useRef<TextInputInstance>(null);
   const priceInput = useRef<TextInputInstance>(null);
@@ -139,21 +147,21 @@ function DishForm({
                 {saveError}
               </AppText>
             )}
-            <View style={styles.actions}>
+            <View
+              style={[styles.actions, stackFields && styles.stackedActions]}
+            >
               <AppButton
                 variant="ghost"
                 onPress={navigation.goBack}
                 disabled={saving}
-                wrapLabel={fontScale >= 1.3}
-                style={styles.action}
+                style={[styles.action, stackFields && styles.fullAction]}
               >
                 {t('auth.cancel')}
               </AppButton>
               <AppButton
                 onPress={handleSubmit}
-                wrapLabel={fontScale >= 1.3}
                 loading={saving}
-                style={styles.action}
+                style={[styles.action, stackFields && styles.fullAction]}
               >
                 {t(
                   saving
@@ -169,6 +177,7 @@ function DishForm({
       >
         <DishPhotoField
           uri={draft.imageUrl}
+          category={draft.category}
           editing={editing}
           disabled={saving}
           onPress={() => setSheet('image')}
@@ -236,7 +245,7 @@ function DishForm({
               disabled={saving}
               style={styles.category}
             >
-              <AppText style={styles.categoryText}>
+              <AppText numberOfLines={1} style={styles.categoryText}>
                 {t(`menu.categories.${draft.category}`, {
                   defaultValue: draft.category,
                 })}
@@ -264,6 +273,11 @@ function DishForm({
       />
       <DishImageSheet
         visible={sheet === 'image'}
+        canRemove={!!draft.image}
+        onRemove={() => {
+          removeSelectedImage();
+          setSheet(null);
+        }}
         onClose={() => setSheet(null)}
         onSelect={image => {
           selectImage(image);
@@ -281,7 +295,9 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   actions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  stackedActions: { flexDirection: 'column' },
   action: { flex: 1 },
+  fullAction: { flex: 0, width: '100%' },
   label: { color: colors.muted, lineHeight: 14, marginBottom: 6 },
   description: { minHeight: 68, textAlignVertical: 'top' },
   fields: { flexDirection: 'row', gap: 14 },
@@ -298,6 +314,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 21,
   },
-  categoryText: { flex: 1 },
+  categoryText: { flex: 1, minWidth: 0 },
   chevron: { transform: [{ rotate: '90deg' }] },
 });

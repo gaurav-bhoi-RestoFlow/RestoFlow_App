@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { BottomSheet } from '../../components/BottomSheet';
 import { SheetOption } from '../../components/SheetOption';
 import { dishCategories } from './menuConfig';
+import { DishImage } from './DishImage';
 
 export function DishCategorySheet({
   visible,
@@ -32,6 +33,12 @@ export function DishCategorySheet({
                 defaultValue: category,
               })}
               selected={selected === category}
+              leading={
+                <View style={styles.thumbnail}>
+                  <DishImage category={category} />
+                </View>
+              }
+              numberOfLines={1}
               plain
               trailing
               onPress={() => onSelect(category)}
@@ -42,4 +49,7 @@ export function DishCategorySheet({
     </BottomSheet>
   );
 }
-const styles = StyleSheet.create({ categories: { gap: 3, paddingBottom: 50 } });
+const styles = StyleSheet.create({
+  categories: { gap: 3, paddingBottom: 50 },
+  thumbnail: { width: 48, height: 36, flexShrink: 0 },
+});

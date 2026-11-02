@@ -59,6 +59,18 @@ jest.mock('react-native-image-picker', () => ({
   launchCamera: jest.fn(async () => ({ didCancel: true })),
 }));
 
+require('react-native').NativeModules.ProfilePhoto = {
+  prepare: jest.fn(async () => ({
+    uri: 'file:///cache/profile-photos/prepared.jpg',
+    type: 'image/jpeg',
+    name: 'profile.jpg',
+    width: 256,
+    height: 256,
+    fileSize: 12000,
+  })),
+  remove: jest.fn(async () => undefined),
+};
+
 jest.mock('react-native-keychain', () => {
   const values = new Map();
   return {

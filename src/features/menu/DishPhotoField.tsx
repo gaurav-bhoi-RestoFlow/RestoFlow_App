@@ -7,11 +7,13 @@ import { colors } from '../../theme/tokens';
 
 export function DishPhotoField({
   uri,
+  category,
   editing,
   disabled,
   onPress,
 }: {
-  uri: string;
+  uri?: string;
+  category: string;
   editing: boolean;
   disabled: boolean;
   onPress: () => void;
@@ -25,9 +27,9 @@ export function DishPhotoField({
       style={styles.picker}
     >
       <View style={styles.image}>
-        <DishImage uri={uri} />
+        <DishImage uri={uri} category={category} />
       </View>
-      <AppText style={styles.label}>
+      <AppText numberOfLines={1} style={styles.label}>
         {t(editing ? 'menu.changeImage' : 'menu.addImageOptional')}
       </AppText>
     </Pressable>
@@ -36,13 +38,15 @@ export function DishPhotoField({
 const styles = StyleSheet.create({
   picker: {
     alignSelf: 'center',
+    maxWidth: '100%',
     alignItems: 'center',
     marginTop: 9,
     marginBottom: 32,
   },
   image: {
-    width: 106,
-    height: 92,
+    width: 176,
+    maxWidth: '100%',
+    aspectRatio: 4 / 3,
     backgroundColor: colors.food,
     borderRadius: 23,
     overflow: 'hidden',

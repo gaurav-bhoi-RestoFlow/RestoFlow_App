@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Other — RestoFlow</title>
+  <desc>A covered serving dish, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <ellipse cx="280" cy="292" rx="117" ry="14" fill="#D8CEB9"/>
+  <rect x="272" y="168" width="16" height="25" rx="6" fill="#62724E"/>
+  <ellipse cx="280" cy="167" rx="20" ry="12" fill="#7D8A60"/>
+  <ellipse cx="276" cy="164" rx="11" ry="5" fill="#9CA98B"/>
+  <path d="M178 278C181 220 221 183 280 183C339 183 379 220 382 278Z" fill="#ADB99B"/>
+  <path d="M193 267C197 230 221 205 254 198C226 214 212 240 211 267Z" fill="#CDD4BC"/>
+  <path d="M280 183C339 183 379 220 382 278H359C359 230 330 199 280 183Z" fill="#98A584"/>
+  <rect x="166" y="274" width="228" height="17" rx="8.5" fill="#FFFDF6"/>
+  <rect x="166" y="286" width="228" height="9" rx="4.5" fill="#62724E"/>
+  </g>
+</svg>

@@ -7,6 +7,8 @@ import { colors } from '../theme/tokens';
 export function SheetOption({
   label,
   icon,
+  leading,
+  numberOfLines,
   selected,
   plain,
   danger,
@@ -16,6 +18,8 @@ export function SheetOption({
 }: {
   label: string;
   icon?: IconName;
+  leading?: React.ReactNode;
+  numberOfLines?: number;
   selected?: boolean;
   plain?: boolean;
   danger?: boolean;
@@ -37,8 +41,10 @@ export function SheetOption({
         disabled && styles.disabled,
       ]}
     >
-      {icon && <Icon name={icon} color={color} size={21} />}
-      <AppText style={[styles.label, { color }]}>{label}</AppText>
+      {leading ?? (icon && <Icon name={icon} color={color} size={21} />)}
+      <AppText numberOfLines={numberOfLines} style={[styles.label, { color }]}>
+        {label}
+      </AppText>
       {(selected || trailing) && (
         <Icon name={selected ? 'check' : 'arrow'} size={18} />
       )}
@@ -57,6 +63,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   plain: { backgroundColor: 'transparent' },
-  label: { flex: 1, fontSize: 14, lineHeight: 21 },
+  label: { flex: 1, minWidth: 0, fontSize: 14, lineHeight: 21 },
   disabled: { opacity: 0.5 },
 });

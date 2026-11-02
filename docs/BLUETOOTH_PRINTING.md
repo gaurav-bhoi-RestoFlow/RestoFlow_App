@@ -8,9 +8,9 @@ The Receipt preview's **Print bill** sheet now checks Bluetooth and app permissi
 2. If Bluetooth is off, open phone settings, turn it on and return. Search runs again after returning from an error state. Search and connection attempts can be cancelled.
 3. Choose a paired or discovered device. Approve the operating system's pairing request if asked. Devices include names, identifiers and Classic/BLE transport so identically named printers can be distinguished. Discovery is bounded to 12 seconds; paired Android devices are included, even when not currently advertising.
 4. Check that the printer is in ESC/POS receipt mode, choose 58 mm or 80 mm paper, and print. Keep the app open. Transport timeouts and disconnects are bounded. **Stop sending** closes the connection; bytes already received by the printer cannot be recalled.
-5. Check the physical receipt before confirming it. A successful Bluetooth write records SENT, not CONFIRMED. The existing explicit confirmation/finish-visit flow remains in place. The sent screen also allows returning to the dashboard without confirming a print.
-6. At every setup/recovery state, **Continue without printing** saves the latest bill and opens the Dashboard. It never invents a print confirmation or closes a visit. The existing backend only finishes visits with a confirmed print job; supporting visit closure without printing requires a backend contract change.
-7. If the server cannot save the bill, **Keep draft on phone & open dashboard** is an explicit alternative. This preserves a local pending bill in MMKV, scoped to restaurant and customer. Reopening that customer's bill online restores the draft for review/save. A changed server revision or source order blocks saving until the owner reloads; no silent overwrite occurs. A successful save, share or print-job creation clears the pending draft. This is device-local storage, not a server backup or automatic background sync.
+5. A successful Bluetooth write records SENT, not CONFIRMED. After the server acknowledges SENT, the app closes this customer's visit through `POST /orders/{id}/bill/settle`, refreshes the floor, and shows **Customer visit completed**. The endpoint requires the saved bill's `revision` and `sourceOrderUpdatedAt`, checks them under an order lock, and preserves the completion timestamp on repeated requests. Device/system printing follows the same checkout path. Completion preserves the saved bill, customer name, original visit date, item prices, total, and server completion timestamp. Other guests on the table stay active; the table becomes available when its last guest is closed. Printing errors or cancellation keep the visit active until the owner retries or explicitly continues without printing.
+6. At every setup/recovery state, **Continue without printing** saves the latest bill, settles this customer's visit through the same endpoint, refreshes the floor, and opens the Dashboard. No print job or physical-print confirmation is fabricated. A failed checkout stays on the receipt screen for retry; a saved bill is retained so retries do not save another revision. Unsaved or stale bills/orders return HTTP 409 without closing the visit. After a lost settlement response, the app reads the server bill and only accepts a completed visit with the same saved version. A lost SENT acknowledgement or failed settlement after dispatch can be retried without printing twice in the mounted receipt flow. The old print-gated `/bill/finish` endpoint remains available on the server but is no longer used by this mobile checkout. Deploy the settlement endpoint before the mobile update; no database migration is needed.
+7. If the server cannot complete checkout, **Keep draft on phone & open dashboard** is an explicit alternative. This preserves a local pending bill in MMKV, scoped to restaurant and customer. Reopening that customer's bill online restores the draft for review/save. A changed server revision or source order blocks saving until the owner reloads; no silent overwrite occurs. A successful save, share or print-job creation clears the pending draft. This is device-local storage, not a server backup or automatic background sync.
 
 ## Compatibility
 
@@ -42,7 +42,7 @@ Receipts use the server print-job snapshot, including its bill number, exact ite
 | Silent/write-only printer, missing/invalid status reply | Short status timeout, no fabricated ready/paper state; physical inspection remains required |
 | Disconnect, cancellation or timeout after data may have left the phone | Potential partial/complete-print message; inspect receipt before an explicit retry. No automatic reprint |
 | Lost server SENT acknowledgement after successful dispatch | Retry the server status update using the same job; do not dispatch another receipt during the same mounted receipt flow |
-| Server save/create/update conflict, timeout, outage, authentication or other API failure | Existing API error shown; never confirm/finish falsely; retry or explicitly keep a local draft and leave |
+| Server save/create/update/close conflict, timeout, outage, authentication or other API failure | Existing API error shown; checkout only completes after a server response with the matching customer, table and `closedAt`; retry or explicitly keep a local draft and leave |
 | Repeated taps, cancelled operations completing late, hidden sheet | Single-operation guards, ignored stale callbacks, no scanning/permission request while hidden |
 | Oversized receipt or unexpected native/vendor error | Bounded failure, readable generic recovery, system print/share/skip paths |
 
@@ -51,6 +51,20 @@ ESC/POS status is not a universal hardware API. Unsupported or absent status rep
 The paper/error masks follow [Epson's DLE EOT reference](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/dle_eot.html). Android permission and pairing behavior follow [Bluetooth permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions) and [connecting devices](https://developer.android.com/develop/connectivity/bluetooth/connect-bluetooth-devices). iPhone transport/vendor limits are described in [Apple Bluetooth](https://developer.apple.com/bluetooth/) and [External Accessory](https://developer.apple.com/documentation/externalaccessory/).
 
 ## Verification and release
+
+Checkout completion update: all 385 mobile Jest tests across 21 suites pass,
+TypeScript passes, and ESLint reports zero errors with five existing warnings.
+Coverage includes completion after system/Bluetooth printing and without printing,
+saved customer/date/price details, one remaining guest versus an empty table,
+failed saves/closes, lost close responses, duplicate taps, and reprinting/sharing
+completed receipts. All 382 backend unit tests across 27 suites and all 13 billing
+database integration tests against the pinned DEV database pass. These cover
+simultaneous settlements, preserved timestamps, history, stale edits, saved
+prices, independent guest closure, and SENT prints remaining unconfirmed. The
+database tests create and remove isolated synthetic records. The generated
+English backend catalog is synchronized and passes its consistency check. No
+device installation, deployment or physical printer verification was performed
+for this checkout update.
 
 - New native Android and iOS bridges require a native rebuild/reinstall; an OTA JavaScript update alone cannot add them. No production deployment or device installation was performed.
 - TypeScript passed; ESLint passed with existing warnings and no errors; all 280 Jest tests across 17 suites passed. Focused tests cover permission selection, no hardware/Bluetooth off, scan/connect errors, late callbacks, cancellation, immutable snapshots, no duplicate dispatch after acknowledgement loss, unknown error recovery, skip/dashboard navigation and local-draft restore/conflict behavior.

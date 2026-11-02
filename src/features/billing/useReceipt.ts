@@ -20,7 +20,7 @@ export function useReceipt(
   input?: BillDraft,
 ) {
   const { t, i18n } = useTranslation();
-  const { restaurant } = useRestaurant();
+  const { restaurant, refresh } = useRestaurant();
   const { session } = useSession();
   const [bill, setBill] = useState<CustomerBill | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,7 @@ export function useReceipt(
   const pending = useRef(false);
   const printRequest = useRef<{ id: string; draft: BillDraft } | null>(null);
   const printJob = useRef<BillPrintJob | null>(null);
+  const savedBill = useRef<CustomerBill | null>(null);
   const nativeDispatched = useRef(false);
   const load = useCallback(
     async (signal?: AbortSignal) => {
@@ -39,7 +40,7 @@ export function useReceipt(
         const value = input
           ? await billingApi.preview(restaurant.id, customerId, input, signal)
           : await billingApi.get(restaurant.id, customerId, signal);
-        if (value.table.id !== tableId)
+        if (value.table.id !== tableId || value.orderId !== customerId)
           throw new Error('The order does not belong to this table.');
         if (!signal?.aborted) {
           setBill(value);
@@ -58,6 +59,42 @@ export function useReceipt(
     load(controller.signal);
     return () => controller.abort();
   }, [load]);
+  async function completeVisit(snapshot: CustomerBill) {
+    if (snapshot.table.id !== tableId || snapshot.orderId !== customerId)
+      throw new Error('The order does not belong to this table.');
+    let completed = savedBill.current?.closedAt ? savedBill.current : snapshot;
+    if (!completed.closedAt) {
+      try {
+        completed = await billingApi.settle(restaurant.id, customerId, {
+          expectedRevision: snapshot.revision,
+          expectedOrderUpdatedAt: snapshot.sourceOrderUpdatedAt,
+        });
+      } catch (cause) {
+        // The server may have closed the visit before its response was lost.
+        // Accept recovery only for the exact saved version being settled.
+        const latest = await billingApi
+          .get(restaurant.id, customerId)
+          .catch(() => null);
+        if (
+          !latest?.closedAt ||
+          latest.revision !== snapshot.revision ||
+          latest.sourceOrderUpdatedAt !== snapshot.sourceOrderUpdatedAt
+        )
+          throw cause;
+        completed = latest;
+      }
+    }
+    if (
+      completed.orderId !== customerId ||
+      completed.table.id !== tableId ||
+      !completed.closedAt
+    )
+      throw new Error('The customer visit could not be completed.');
+    savedBill.current = completed;
+    setBill(completed);
+    receiptDrafts.clear(restaurant.id, customerId);
+    await refresh().catch(() => undefined);
+  }
   async function print(
     dispatch?: (snapshot: CustomerBill) => Promise<void>,
   ): Promise<string | null> {
@@ -84,9 +121,13 @@ export function useReceipt(
       )
         throw new Error('The order does not belong to this table.');
       printJob.current = job;
+      savedBill.current = job.receipt;
       setBill(job.receipt);
       receiptDrafts.clear(restaurant.id, customerId);
-      if (job.status === 'SENT' || job.status === 'CONFIRMED') return job.id;
+      if (job.status === 'SENT' || job.status === 'CONFIRMED') {
+        await completeVisit(job.receipt);
+        return job.id;
+      }
       if (!nativeDispatched.current) {
         if (dispatch) await dispatch(job.receipt);
         else {
@@ -111,11 +152,12 @@ export function useReceipt(
         'SENT',
       );
       printJob.current = sent;
+      await completeVisit(sent.receipt);
       return sent.id;
     } catch (cause) {
       setError(normalizeApiError(cause).message);
       // A dismissed/failed native dialog must never close the customer's visit.
-      // After native success, retain PENDING for status retry without printing twice.
+      // After native success, retry status/checkout without printing twice.
       if (!nativeDispatched.current && printJob.current) {
         await billingApi
           .updatePrintJob(
@@ -146,17 +188,19 @@ export function useReceipt(
     try {
       // Print-job creation already saved this exact revision. Do not overwrite it
       // using the preview's stale expectedRevision after a failed print.
-      if (!printJob.current) {
-        const saved = await billingApi.save(
+      let saved = savedBill.current ?? (bill.closedAt ? bill : null);
+      if (!saved) {
+        saved = await billingApi.save(
           restaurant.id,
           customerId,
           billDraft(bill),
         );
         if (saved.table.id !== tableId || saved.orderId !== customerId)
           throw new Error('The order does not belong to this table.');
+        savedBill.current = saved;
         setBill(saved);
       }
-      receiptDrafts.clear(restaurant.id, customerId);
+      await completeVisit(saved);
       return true;
     } catch (cause) {
       setError(normalizeApiError(cause).message);
@@ -183,13 +227,12 @@ export function useReceipt(
     setBusy(true);
     setError('');
     try {
-      const saved = await billingApi.save(
-        restaurant.id,
-        customerId,
-        billDraft(bill),
-      );
+      const saved = bill.closedAt
+        ? bill
+        : await billingApi.save(restaurant.id, customerId, billDraft(bill));
       // Keep the saved revision even if the native share is dismissed or fails.
       setBill(saved);
+      savedBill.current = saved;
       receiptDrafts.clear(restaurant.id, customerId);
       printRequest.current = null;
       printJob.current = null;

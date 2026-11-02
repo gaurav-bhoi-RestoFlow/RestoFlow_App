@@ -7,7 +7,6 @@ import { colors } from '../../theme/tokens';
 import { formatCurrency } from '../../utils/currency';
 import type { Dish } from '../restaurant/types';
 import { DishImage } from './DishImage';
-import { dishIllustration } from './menuConfig';
 
 export function DishCard({
   dish,
@@ -22,10 +21,12 @@ export function DishCard({
   return (
     <View style={styles.card} testID={`dish-${dish.id}`}>
       <View style={styles.food}>
-        <DishImage uri={dish.imageUrl ?? dishIllustration(dish)} />
+        <DishImage uri={dish.imageUrl} category={dish.category} />
       </View>
       <View style={styles.titleRow}>
-        <AppText style={styles.title}>{dish.name}</AppText>
+        <AppText numberOfLines={1} style={styles.title}>
+          {dish.name}
+        </AppText>
         {onMore && (
           <Pressable
             onPress={onMore}
@@ -48,13 +49,16 @@ export function DishCard({
         {dish.description || ' '}
       </AppText>
       <View style={styles.priceRow}>
-        <AppText style={styles.price}>{formatCurrency(dish.price)}</AppText>
+        <AppText numberOfLines={1} style={styles.price}>
+          {formatCurrency(dish.price)}
+        </AppText>
         <FoodTypeMark type={dish.foodType} />
       </View>
       <View
         style={[styles.availability, !dish.available && styles.unavailable]}
       >
         <AppText
+          numberOfLines={1}
           style={[styles.status, !dish.available && styles.unavailableText]}
         >
           {t(dish.available ? 'menu.available' : 'menu.unavailable')}
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 44,
   },
-  title: { flex: 1, fontSize: 14, lineHeight: 19.6 },
+  title: { flex: 1, minWidth: 0, fontSize: 14, lineHeight: 19.6 },
   more: {
     width: 32,
     minHeight: 44,
@@ -107,7 +111,13 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
-  price: { fontSize: 15, lineHeight: 21, color: colors.forest },
+  price: {
+    flexShrink: 1,
+    minWidth: 0,
+    fontSize: 15,
+    lineHeight: 21,
+    color: colors.forest,
+  },
   availability: {
     minWidth: 85,
     alignSelf: 'flex-start',

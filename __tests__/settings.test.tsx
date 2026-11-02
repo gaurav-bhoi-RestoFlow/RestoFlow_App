@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTestRenderer, { act } from 'react-test-renderer';
+import { AppState, NativeModules, type AppStateStatus } from 'react-native';
 import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { launchImageLibrary } from 'react-native-image-picker';
 import App from '../App';
@@ -17,6 +18,7 @@ import { SettingsRow } from '../src/features/settings/SettingsRow';
 import { LoginScreen } from '../src/features/auth/LoginScreen';
 import { getCredentials, saveTokens } from '../src/services/auth/credentials';
 import { store } from '../src/store';
+import { signedOut } from '../src/store/slices/sessionSlice';
 import { sourceVersion } from '../src/localization/catalogMetadata';
 import {
   account,
@@ -79,7 +81,7 @@ beforeEach(async () => {
         profileImageUrl: parts.some(
           (part: { fieldName: string }) => part.fieldName === 'image',
         )
-          ? `/api/v1/media/users/${user.id}/profile/saved.png`
+          ? `/api/v1/media/users/${user.id}/profile/saved.jpg`
           : user.profileImageUrl,
       };
       data = user;
@@ -230,6 +232,61 @@ test('profile save persists the trimmed name, preserves the existing photo, and 
   expect(await getCredentials()).not.toBeNull();
 });
 
+test.each(['OWNER', 'WAITER'] as const)(
+  '%s name changes update all account views and survive reopening',
+  async value => {
+    role = value;
+    await openSettings();
+    await openRow('Edit profile');
+    await fill({ 'Your name': '  Saved Account Name  ' });
+    await press('Save profile');
+    expect(user.fullName).toBe('Saved Account Name');
+    const avatars = renderer!.root.findAllByType(Avatar);
+    expect(avatars.length).toBeGreaterThanOrEqual(2);
+    expect(avatars.every(avatar => avatar.props.name === user.fullName)).toBe(
+      true,
+    );
+    expect(
+      renderer!.root
+        .findByType(SettingsScreen)
+        .findAllByType(AppText)
+        .some(text => text.props.children === user.fullName),
+    ).toBe(true);
+    await act(async () => renderer!.unmount());
+    renderer = undefined;
+    store.dispatch(signedOut());
+    await openSettings();
+    expect(store.getState().session.current?.name).toBe('Saved Account Name');
+    await openRow('Edit profile');
+    expect(renderer!.root.findByType(AppInput).props.value).toBe(
+      'Saved Account Name',
+    );
+    expect(
+      renderer!.root
+        .findAllByType(AppButton)
+        .find(button => button.props.children === 'Save profile')!.props
+        .disabled,
+    ).toBe(true);
+  },
+);
+
+test('profile saves apply all returned account details while retaining restaurant membership', async () => {
+  await openSettings();
+  const before = store.getState().session.current!;
+  user.phoneNumber = '+919123456789';
+  await openRow('Edit profile');
+  await fill({ 'Your name': 'Updated Details' });
+  await press('Save profile');
+  expect(store.getState().session.current).toMatchObject({
+    userId: before.userId,
+    restaurantId: before.restaurantId,
+    restaurants: before.restaurants,
+    role: before.role,
+    name: user.fullName,
+    phone: user.phoneNumber,
+  });
+});
+
 test('selected profile photos use native multipart files and the confirmed server media URL', async () => {
   jest.mocked(launchImageLibrary).mockResolvedValue({
     assets: [{ uri: 'file:///profile.png', type: 'image/png', fileSize: 1024 }],
@@ -238,7 +295,7 @@ test('selected profile photos use native multipart files and the confirmed serve
   await openRow('Edit profile');
   await act(async () => renderer!.root.findByType(PhotoPicker).props.onPress());
   expect(renderer!.root.findByType(PhotoPicker).props.photo).toBe(
-    'file:///profile.png',
+    'file:///cache/profile-photos/prepared.jpg',
   );
   await press('Save profile');
   const request = requests('/api/v1/auth/me').find(
@@ -251,13 +308,191 @@ test('selected profile photos use native multipart files and the confirmed serve
       .getParts()
       .find((part: { fieldName: string }) => part.fieldName === 'image'),
   ).toMatchObject({
-    uri: 'file:///profile.png',
-    name: 'profile.png',
-    headers: { 'content-type': 'image/png' },
+    uri: 'file:///cache/profile-photos/prepared.jpg',
+    name: 'profile.jpg',
+    headers: { 'content-type': 'image/jpeg' },
   });
   expect(
     renderer!.root.findByType(SettingsScreen).findByType(Avatar).props.photo,
   ).toBe(`${DEV_ORIGIN}${user.profileImageUrl}`);
+});
+
+test.each(['OWNER', 'WAITER'] as const)(
+  '%s photo changes reach every mounted account avatar and survive reopening',
+  async value => {
+    role = value;
+    jest.mocked(launchImageLibrary).mockResolvedValue({
+      assets: [
+        {
+          uri: 'file:///large-camera-photo.heic',
+          type: 'image/heic',
+          fileSize: 12 * 1024 * 1024,
+        },
+      ],
+    });
+    await openSettings();
+    await openRow('Edit profile');
+    const saveButton = () =>
+      renderer!.root
+        .findAllByType(AppButton)
+        .find(button => button.props.children === 'Save profile')!;
+    expect(saveButton().props.disabled).toBe(true);
+    await act(async () =>
+      renderer!.root.findByType(PhotoPicker).props.onPress(),
+    );
+    expect(NativeModules.ProfilePhoto.prepare).toHaveBeenCalledWith(
+      'file:///large-camera-photo.heic',
+    );
+    expect(saveButton().props.disabled).toBe(false);
+    await press('Save profile');
+    const saved = `${DEV_ORIGIN}${user.profileImageUrl}`;
+    const avatars = renderer!.root.findAllByType(Avatar);
+    expect(avatars.length).toBeGreaterThanOrEqual(2);
+    expect(avatars.every(avatar => avatar.props.photo === saved)).toBe(true);
+    await act(async () => renderer!.unmount());
+    renderer = undefined;
+    store.dispatch(signedOut());
+    await openSettings();
+    expect(store.getState().session.current?.photo).toBe(saved);
+    await openRow('Edit profile');
+    expect(renderer!.root.findByType(PhotoPicker).props.photo).toBe(saved);
+  },
+);
+
+test('a failed photo upload preserves the previous avatar and the prepared draft for retry', async () => {
+  user.profileImageUrl = `/api/v1/media/users/${user.id}/profile/previous.jpg`;
+  const previous = `${DEV_ORIGIN}${user.profileImageUrl}`;
+  jest.mocked(launchImageLibrary).mockResolvedValue({
+    assets: [{ uri: 'file:///new.jpg', type: 'image/jpg' }],
+  });
+  await openSettings();
+  await openRow('Edit profile');
+  await act(async () => renderer!.root.findByType(PhotoPicker).props.onPress());
+  failProfile = true;
+  await press('Save profile');
+  expect(store.getState().session.current?.photo).toBe(previous);
+  expect(renderer!.root.findByType(PhotoPicker).props.photo).toBe(
+    'file:///cache/profile-photos/prepared.jpg',
+  );
+  failProfile = false;
+  await press('Save profile');
+  expect(store.getState().session.current?.photo).toBe(
+    `${DEV_ORIGIN}${user.profileImageUrl}`,
+  );
+});
+
+test('resuming the app reloads the current profile from the backend', async () => {
+  const originalListener = AppState.addEventListener;
+  const listeners: ((state: AppStateStatus) => void)[] = [];
+  AppState.addEventListener = jest.fn((_event, callback) => {
+    listeners.push(callback as (state: AppStateStatus) => void);
+    return { remove: jest.fn() };
+  });
+  try {
+    await openSettings();
+    await act(async () =>
+      listeners.forEach(callback => callback('background')),
+    );
+    user = {
+      ...user,
+      fullName: 'Updated on another device',
+      profileImageUrl: `/api/v1/media/users/${user.id}/profile/another-device.jpg`,
+    };
+    await act(async () => listeners.forEach(callback => callback('active')));
+    expect(store.getState().session.current).toMatchObject({
+      name: user.fullName,
+      photo: `${DEV_ORIGIN}${user.profileImageUrl}`,
+    });
+  } finally {
+    AppState.addEventListener = originalListener;
+  }
+});
+
+test.each([false, true])(
+  'an open profile form refreshes untouched names and preserves drafts (edited: %s)',
+  async edited => {
+    const originalListener = AppState.addEventListener;
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    AppState.addEventListener = jest.fn((_event, callback) => {
+      listeners.push(callback as (state: AppStateStatus) => void);
+      return { remove: jest.fn() };
+    });
+    try {
+      await openSettings();
+      await openRow('Edit profile');
+      if (edited) await fill({ 'Your name': 'Unsaved Name' });
+      await act(async () =>
+        listeners.forEach(callback => callback('background')),
+      );
+      user = { ...user, fullName: 'Fresh Server Name' };
+      await act(async () => listeners.forEach(callback => callback('active')));
+      expect(store.getState().session.current?.name).toBe('Fresh Server Name');
+      expect(renderer!.root.findByType(AppInput).props.value).toBe(
+        edited ? 'Unsaved Name' : 'Fresh Server Name',
+      );
+      expect(
+        renderer!.root
+          .findAllByType(AppButton)
+          .find(button => button.props.children === 'Save profile')!.props
+          .disabled,
+      ).toBe(!edited);
+    } finally {
+      AppState.addEventListener = originalListener;
+    }
+  },
+);
+
+test('a profile read started before saving cannot overwrite newly saved account details', async () => {
+  const originalListener = AppState.addEventListener;
+  const listeners: ((state: AppStateStatus) => void)[] = [];
+  AppState.addEventListener = jest.fn((_event, callback) => {
+    listeners.push(callback as (state: AppStateStatus) => void);
+    return { remove: jest.fn() };
+  });
+  let finish!: () => void;
+  try {
+    await openSettings();
+    const delay = new Promise<void>(resolve => {
+      finish = resolve;
+    });
+    let delayed = false;
+    apiClient.defaults.adapter = async config => {
+      const response = await adapter(config);
+      if (
+        config.url === '/api/v1/auth/me' &&
+        config.method === 'get' &&
+        !delayed
+      ) {
+        delayed = true;
+        await delay;
+      }
+      return response;
+    };
+    await act(async () =>
+      listeners.forEach(callback => callback('background')),
+    );
+    await act(async () => listeners.forEach(callback => callback('active')));
+    expect(delayed).toBe(true);
+    await openRow('Edit profile');
+    await fill({ 'Your name': 'Newest Saved Name' });
+    jest
+      .mocked(launchImageLibrary)
+      .mockResolvedValue({ assets: [{ uri: 'file:///new.jpg' }] });
+    await act(async () =>
+      renderer!.root.findByType(PhotoPicker).props.onPress(),
+    );
+    await press('Save profile');
+    const saved = store.getState().session.current;
+    expect(saved).toMatchObject({
+      name: 'Newest Saved Name',
+      photo: `${DEV_ORIGIN}${user.profileImageUrl}`,
+    });
+    await act(async () => finish());
+    expect(store.getState().session.current).toEqual(saved);
+  } finally {
+    finish?.();
+    AppState.addEventListener = originalListener;
+  }
 });
 
 test('invalid names and failed profile saves leave account details unchanged and allow retry', async () => {

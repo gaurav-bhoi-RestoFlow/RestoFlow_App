@@ -58,16 +58,21 @@ export function TableTile({
             value0: table.number,
           })}
           onPress={onRemove}
-          style={styles.remove}
+          hitSlop={8}
+          style={({ pressed }) => [
+            styles.remove,
+            pressed && styles.removePressed,
+          ]}
         >
-          <Icon name="close" size={18} />
+          <Icon name="trash" size={14} color={colors.error} />
         </Pressable>
       )}
     </View>
   );
 }
 const styles = StyleSheet.create({
-  wrapper: { width: '47.4%' },
+  // Leave room for the floating button and its full touch target above the card.
+  wrapper: { width: '47.4%', paddingTop: 22 },
   tile: {
     minHeight: 145,
     borderRadius: 38,
@@ -101,13 +106,23 @@ const styles = StyleSheet.create({
   lightMuted: { color: '#d4e4d8' },
   remove: {
     position: 'absolute',
-    right: 1,
-    top: 1,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    right: 8,
+    top: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.sage,
+    backgroundColor: colors.dangerSoft,
+    zIndex: 1,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  removePressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.92 }],
   },
 });

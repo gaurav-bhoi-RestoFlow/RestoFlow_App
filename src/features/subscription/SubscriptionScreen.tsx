@@ -6,7 +6,8 @@ import { Screen } from '../../components/Screen';
 import { AppHeader } from '../../components/AppHeader';
 import { AppText } from '../../components/AppText';
 import { Notice } from '../../components/Notice';
-import { colors, layout } from '../../theme/tokens';
+import { Icon } from '../../components/Icon';
+import { colors, layout, premiumColors } from '../../theme/tokens';
 import { formatDate } from '../../utils/date';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
 import { PlanCard } from './PlanCard';
@@ -52,23 +53,51 @@ export function SubscriptionScreen({
         progress={progress}
         trialDays={trialDays}
       />
-      <View style={styles.details}>
-        {details.map(detail => (
-          <View key={detail.label} style={[layout.row, styles.row]}>
-            <AppText muted variant="small">
+      <View
+        style={[styles.details, restaurant.isPremium && styles.premiumDetails]}
+      >
+        {details.map((detail, index) => (
+          <View
+            key={detail.label}
+            style={[
+              layout.row,
+              styles.row,
+              restaurant.isPremium && styles.premiumRow,
+              restaurant.isPremium &&
+                index === details.length - 1 &&
+                styles.lastRow,
+            ]}
+          >
+            <AppText
+              muted
+              variant="small"
+              style={restaurant.isPremium && styles.premiumLabel}
+            >
               {detail.label}
             </AppText>
-            <AppText style={styles.value}>{detail.value}</AppText>
+            <AppText
+              style={[
+                styles.value,
+                restaurant.isPremium && styles.premiumValue,
+              ]}
+            >
+              {detail.value}
+            </AppText>
           </View>
         ))}
       </View>
-      <Notice icon="shield">
-        {restaurant.isPremium
-          ? t('subscription.yourPlanDetailsAreLinkedToYourRestaurantAccount')
-          : t(
-              'subscription.enjoyEveryOrderingAndBillingFeatureDuringYourTrial',
-            )}
-      </Notice>
+      {restaurant.isPremium ? (
+        <View style={styles.premiumNotice}>
+          <Icon name="shield" color={premiumColors.goldDark} size={20} />
+          <AppText style={styles.premiumNoticeCopy}>
+            {t('subscription.yourPlanDetailsAreLinkedToYourRestaurantAccount')}
+          </AppText>
+        </View>
+      ) : (
+        <Notice icon="shield">
+          {t('subscription.enjoyEveryOrderingAndBillingFeatureDuringYourTrial')}
+        </Notice>
+      )}
     </Screen>
   );
 }
@@ -80,4 +109,33 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.line,
   },
   value: { fontSize: 12, fontWeight: '700' },
+  premiumDetails: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: premiumColors.surfaceBorder,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 2,
+    marginVertical: 22,
+  },
+  premiumRow: { borderBottomColor: premiumColors.surfaceBorder },
+  lastRow: { borderBottomWidth: 0 },
+  premiumLabel: { flex: 1 },
+  premiumValue: { flex: 1, textAlign: 'right' },
+  premiumNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: premiumColors.surface,
+    borderWidth: 1,
+    borderColor: premiumColors.surfaceBorder,
+    borderRadius: 20,
+    padding: 18,
+  },
+  premiumNoticeCopy: {
+    flex: 1,
+    color: premiumColors.goldDark,
+    fontSize: 12,
+    lineHeight: 20,
+  },
 });

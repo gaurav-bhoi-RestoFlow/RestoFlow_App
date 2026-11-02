@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Starters — RestoFlow</title>
+  <desc>Paneer tikka skewers, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <path d="M184 222L376 258M184 277L376 207" stroke="#755738" stroke-width="8"/>
+  <rect x="183" y="147" width="61" height="61" rx="12" fill="#DD9652"/>
+  <rect x="261" y="130" width="61" height="61" rx="12" fill="#D1833E"/>
+  <rect x="317" y="191" width="61" height="61" rx="12" fill="#DD9652"/>
+  <rect x="172" y="230" width="61" height="61" rx="12" fill="#DD9652"/>
+  <rect x="244" y="228" width="61" height="61" rx="12" fill="#D1833E"/>
+  <path d="M192 160L220 181M269 143L297 164M326 205L354 226M181 244L209 265M253 242L281 263" stroke="#B76A2D" stroke-width="6"/>
+  <ellipse cx="222" cy="185" rx="11" ry="5.5" fill="#E5AD65"/>
+  <ellipse cx="300" cy="169" rx="11" ry="5.5" fill="#E5AD65"/>
+  <ellipse cx="356" cy="230" rx="11" ry="5.5" fill="#E5AD65"/>
+  <ellipse cx="211" cy="269" rx="11" ry="5.5" fill="#E5AD65"/>
+  <ellipse cx="283" cy="267" rx="11" ry="5.5" fill="#E5AD65"/>
+  <path d="M320 141L352 154L346 182L307 167Z" fill="#62724E"/>
+  <path d="M233 305L293 281L302 308L261 322Z" fill="#62724E"/>
+  </g>
+</svg>

@@ -139,7 +139,12 @@ export function OrderScreen({ navigation, route }: RootScreenProps<'Order'>) {
           onChangeText={draft.setName}
           placeholder={t('orders.nameOnTheOrder')}
           maxLength={120}
-          error={draft.error}
+          error={
+            draft.error ||
+            (draft.itemCount > 0 && !draft.name.trim()
+              ? t('orders.addTheCustomerSNameBeforeConfirming')
+              : undefined)
+          }
           editable={!draft.busy}
         />
         {draft.hasConflict && (

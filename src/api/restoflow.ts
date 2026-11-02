@@ -1,6 +1,7 @@
 import type { AxiosRequestConfig } from 'axios';
 import { apiClient } from './client';
 import { ENV } from '../config/env';
+import type { CustomerBill } from './billing';
 import type {
   AccountProfile,
   ApiBill,
@@ -52,18 +53,37 @@ export function mediaUrl(path: string | null): string | undefined {
     throw new Error('The media origin does not match this application.');
   return url.href;
 }
+export function profileDetails(
+  user: ApiUser,
+): Pick<Session, 'userId' | 'name' | 'phone' | 'photo'> {
+  if (
+    !user ||
+    typeof user.id !== 'string' ||
+    !user.id ||
+    typeof user.fullName !== 'string' ||
+    user.fullName.trim().length < 2 ||
+    user.fullName.trim().length > 100 ||
+    typeof user.phoneNumber !== 'string' ||
+    !user.phoneNumber.trim() ||
+    (user.profileImageUrl !== null && typeof user.profileImageUrl !== 'string')
+  )
+    throw new Error('The backend returned an invalid profile.');
+  return {
+    userId: user.id,
+    name: user.fullName,
+    phone: user.phoneNumber,
+    photo: mediaUrl(user.profileImageUrl),
+  };
+}
 export function profileSession(profile: AccountProfile): Session {
   const restaurant = profile.restaurants[0];
   if (!restaurant)
     throw new Error('This account has no active restaurant membership.');
   return {
-    userId: profile.user.id,
+    ...profileDetails(profile.user),
     restaurantId: restaurant.id,
     restaurants: profile.restaurants,
     role: restaurant.role === 'OWNER' ? 'owner' : 'waiter',
-    name: profile.user.fullName,
-    phone: profile.user.phoneNumber,
-    photo: mediaUrl(profile.user.profileImageUrl),
   };
 }
 export function photoForm(
@@ -274,7 +294,7 @@ export const restaurantApi = {
       { signal },
     ),
   closeOrder: (id: string, orderId: string) =>
-    requestData<ApiBill>(
+    requestData<CustomerBill>(
       'POST',
       `${base(id)}/orders/${encodeURIComponent(orderId)}/close`,
     ),

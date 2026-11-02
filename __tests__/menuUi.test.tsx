@@ -21,6 +21,9 @@ import { DishCard } from '../src/features/menu/DishCard';
 import { MenuFilters } from '../src/features/menu/MenuFilters';
 import { DishImageSheet } from '../src/features/menu/DishImageSheet';
 import { DishPhotoField } from '../src/features/menu/DishPhotoField';
+import { DishImage } from '../src/features/menu/DishImage';
+import { DishCategorySheet } from '../src/features/menu/DishCategorySheet';
+import { dishCategories } from '../src/features/menu/menuConfig';
 import { FoodTypeSelector } from '../src/features/menu/FoodTypeSelector';
 import { AvailabilityField } from '../src/features/menu/AvailabilityField';
 import { MenuEmptyState } from '../src/features/menu/MenuEmptyState';
@@ -222,7 +225,7 @@ test('add form validates and saves food type, category, availability and pending
   expect(textContent()).toContain('Dish added successfully');
 });
 
-test('edits preload each dish and preserve its image while saving changes', async () => {
+test('edits preload each dish and keep its optional photo missing while saving changes', async () => {
   await render();
   await press('More options for Dal Tadka');
   await press('Edit dish');
@@ -231,8 +234,9 @@ test('edits preload each dish and preserve its image while saving changes', asyn
       .findAllByType(AppInput)
       .find(input => input.props.label === 'Dish name')!.props.value,
   ).toBe('Dal Tadka');
-  expect(renderer.root.findByType(DishPhotoField).props.uri).toBe(
-    'illustration:dal',
+  expect(renderer.root.findByType(DishPhotoField).props.uri).toBe('');
+  expect(renderer.root.findByType(DishPhotoField).props.category).toBe(
+    'Main Course',
   );
   await field('Price', '₹200.50');
   await act(async () =>
@@ -268,9 +272,7 @@ test('image source sheet keeps the default, accepts a gallery image and supports
     renderer.root.findByType(DishPhotoField).props.onPress(),
   );
   await button('Keep default image');
-  expect(renderer.root.findByType(DishPhotoField).props.uri).toBe(
-    'illustration:rice',
-  );
+  expect(renderer.root.findByType(DishPhotoField).props.uri).toBe('');
   jest.mocked(launchImageLibrary).mockResolvedValueOnce({
     assets: [{ uri: 'file:///dish.jpg', fileSize: 500, type: 'image/jpeg' }],
   });
@@ -323,6 +325,101 @@ test('waiters can browse menu but cannot edit dishes or open the owner ledger', 
       .findAllByType(SheetOption)
       .find(option => option.props.label === 'Ledger')!.props.disabled,
   ).toBe(true);
+});
+
+test('all seven category previews update immediately, and pending photos survive switches and picker cancellation', async () => {
+  await render();
+  await press('Add dish');
+  const preview = () => renderer.root.findByType(DishPhotoField);
+  expect(preview().props).toMatchObject({ category: 'Main Course', uri: '' });
+  for (const category of dishCategories) {
+    await press(`Category: ${preview().props.category}`);
+    const options = renderer.root
+      .findByType(DishCategorySheet)
+      .findAllByType(SheetOption);
+    expect(options.map(option => option.props.label)).toEqual(dishCategories);
+    expect(options.every(option => option.props.numberOfLines === 1)).toBe(
+      true,
+    );
+    expect(options.filter(option => option.props.selected)).toHaveLength(1);
+    expect(
+      options.map(option => option.findByType(DishImage).props.category),
+    ).toEqual(dishCategories);
+    await press(category);
+    expect(preview().props).toMatchObject({ category, uri: '' });
+    expect(preview().findByType(DishImage).props.category).toBe(category);
+  }
+  jest.mocked(launchImageLibrary).mockResolvedValueOnce({
+    assets: [
+      { uri: 'file:///selected.jpg', type: 'image/jpeg', fileSize: 500 },
+    ],
+  });
+  await act(async () => preview().props.onPress());
+  await press('Choose from gallery');
+  await press('Category: Other');
+  await press('Desserts');
+  expect(preview().props).toMatchObject({
+    category: 'Desserts',
+    uri: 'file:///selected.jpg',
+  });
+  jest.mocked(launchImageLibrary).mockResolvedValueOnce({ didCancel: true });
+  await act(async () => preview().props.onPress());
+  await press('Choose from gallery');
+  expect(preview().props.uri).toBe('file:///selected.jpg');
+  await press('Remove selected photo');
+  expect(preview().props).toMatchObject({ category: 'Desserts', uri: '' });
+  await field('Dish name', 'Photo-less dessert');
+  await field('Price', '80');
+  await button('Add Dish');
+  const request = server.adapter.mock.calls.find(
+    ([value]) => value.method === 'post',
+  )![0];
+  expect(request.data.get('image')).toBeNull();
+  expect(cachedDishes[0]).toMatchObject({
+    category: 'Desserts',
+    imageUrl: undefined,
+  });
+  await press('More options for Photo-less dessert');
+  await press('Edit dish');
+  expect(preview().props).toMatchObject({ category: 'Desserts', uri: '' });
+});
+
+test('edit keeps existing uploads and unknown categories without inventing photo data', async () => {
+  await render([{ ...mockMenu[0], category: 'Seasonal' }]);
+  server.dishes[0].imageUrl = '/api/v1/media/restaurants/test/existing.jpg';
+  await press('More options for Paneer Tikka');
+  await press('Edit dish');
+  const preview = () => renderer.root.findByType(DishPhotoField);
+  const savedUri = preview().props.uri;
+  expect(savedUri).toContain('existing.jpg');
+  expect(preview().props.category).toBe('Seasonal');
+  await press('Category: Seasonal');
+  await press('Rice');
+  expect(preview().props.uri).toBe(savedUri);
+  jest.mocked(launchImageLibrary).mockResolvedValueOnce({
+    assets: [
+      { uri: 'file:///replacement.jpg', type: 'image/jpeg', fileSize: 500 },
+    ],
+  });
+  await act(async () => preview().props.onPress());
+  await press('Choose from gallery');
+  await act(async () => preview().props.onPress());
+  await press('Remove selected photo');
+  expect(preview().props.uri).toBe(savedUri);
+  await button('Save Changes');
+  const request = server.adapter.mock.calls.find(
+    ([value]) => value.method === 'patch',
+  )![0];
+  expect(request.data.get('image')).toBeNull();
+  expect(cachedDishes[0].imageUrl).toBe(savedUri);
+  server.dishes[0].imageUrl = null;
+  server.dishes[0].category = 'Seasonal';
+  for (let reopen = 0; reopen < 2; reopen += 1) {
+    await press('More options for Paneer Tikka');
+    await press('Edit dish');
+    expect(preview().props).toMatchObject({ category: 'Seasonal', uri: '' });
+    await button('Cancel');
+  }
 });
 
 test('server-confirmed changes also update the restaurant cache used by ordering', async () => {

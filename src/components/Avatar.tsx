@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { colors } from '../theme/tokens';
 import { AppText } from './AppText';
@@ -16,6 +16,7 @@ export function Avatar({
   dark?: boolean;
 }) {
   const { t } = useTranslation();
+  const [failedPhoto, setFailedPhoto] = useState<string>();
   return (
     <View
       style={[
@@ -24,10 +25,13 @@ export function Avatar({
         dark && styles.dark,
       ]}
     >
-      {photo ? (
+      {photo && photo !== failedPhoto ? (
         <Image
+          key={photo}
           source={{ uri: photo }}
           style={{ width: size, height: size }}
+          resizeMode="cover"
+          onError={() => setFailedPhoto(photo)}
           accessibilityLabel={t('common.valueProfilePhoto', { value0: name })}
         />
       ) : (

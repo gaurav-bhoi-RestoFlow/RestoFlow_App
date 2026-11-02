@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A74000000000000000000001 /* ProfilePhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74000000000000000000002 /* ProfilePhoto.swift */; };
+		A74000000000000000000003 /* ProfilePhotoBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A74000000000000000000004 /* ProfilePhotoBridge.m */; };
 		A73000000000000000000005 /* BluetoothReceiptPrinterBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A73000000000000000000006 /* BluetoothReceiptPrinterBridge.m */; };
 		A73000000000000000000003 /* EscPosRaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73000000000000000000004 /* EscPosRaster.swift */; };
 		A73000000000000000000001 /* BluetoothReceiptPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73000000000000000000002 /* BluetoothReceiptPrinter.swift */; };
@@ -24,6 +26,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A74000000000000000000002 /* ProfilePhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfilePhoto.swift; path = RestoFlow/ProfilePhoto.swift; sourceTree = "<group>"; };
+		A74000000000000000000004 /* ProfilePhotoBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ProfilePhotoBridge.m; path = RestoFlow/ProfilePhotoBridge.m; sourceTree = "<group>"; };
 		A73000000000000000000006 /* BluetoothReceiptPrinterBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = BluetoothReceiptPrinterBridge.m; path = RestoFlow/BluetoothReceiptPrinterBridge.m; sourceTree = "<group>"; };
 		A73000000000000000000004 /* EscPosRaster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EscPosRaster.swift; path = RestoFlow/EscPosRaster.swift; sourceTree = "<group>"; };
 		A73000000000000000000002 /* BluetoothReceiptPrinter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BluetoothReceiptPrinter.swift; path = RestoFlow/BluetoothReceiptPrinter.swift; sourceTree = "<group>"; };
@@ -67,6 +71,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				A74000000000000000000002 /* ProfilePhoto.swift */,
+				A74000000000000000000004 /* ProfilePhotoBridge.m */,
 				A72000000000000000000002 /* LedgerFiles.swift */,
 				A73000000000000000000006 /* BluetoothReceiptPrinterBridge.m */,
 				A73000000000000000000004 /* EscPosRaster.swift */,
@@ -322,6 +328,8 @@ if [ -f \"$SRCROOT/.xcode.env.local\" ]; then . \"$SRCROOT/.xcode.env.local\"; f
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				A74000000000000000000001 /* ProfilePhoto.swift in Sources */,
+				A74000000000000000000003 /* ProfilePhotoBridge.m in Sources */,
 				A72000000000000000000001 /* LedgerFiles.swift in Sources */,
 				A73000000000000000000005 /* BluetoothReceiptPrinterBridge.m in Sources */,
 				A73000000000000000000003 /* EscPosRaster.swift in Sources */,

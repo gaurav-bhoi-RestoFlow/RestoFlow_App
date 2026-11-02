@@ -27,19 +27,6 @@ export const menuFilters = [
 ] as const;
 export type MenuFilter = (typeof menuFilters)[number];
 
-export function dishIllustration(dish: Pick<Dish, 'name' | 'category'>) {
-  const name = dish.name.toLowerCase();
-  const category = dish.category.toLowerCase();
-  if (/paneer|chicken|tikka/.test(name) || category === 'starters')
-    return 'illustration:paneer';
-  if (/dal|lentil/.test(name)) return 'illustration:dal';
-  if (/naan/.test(name)) return 'illustration:naan';
-  if (/roti|chapati/.test(name) || category === 'breads')
-    return 'illustration:roti';
-  if (category === 'beverages') return 'illustration:coke';
-  return 'illustration:rice';
-}
-
 export function filterVisibleMenu(
   menu: Dish[],
   search: string,

@@ -88,6 +88,7 @@
     "nameRequired": "Dish name is required",
     "validPriceRequired": "Enter a valid price",
     "changeImage": "Change image",
+    "removeSelectedPhoto": "Remove selected photo",
     "addImageOptional": "Add image · Optional",
     "addDishImage": "Add a dish image",
     "takePhoto": "Take photo",
@@ -204,6 +205,8 @@
     "readyForTheNextGuest": "Ready for the next guest.",
     "thePrintServiceWasOpenedConfirmTheReceiptPrinted": "The print service was opened. Confirm the receipt printed before finishing this visit.",
     "finishCustomerVisit": "Finish customer visit",
+    "customerVisitCompleted": "Customer visit completed",
+    "billSavedAndCustomerCleared": "The bill, customer details, date and total are saved. This customer has been cleared from the table.",
     "reprintReceipt": "Reprint receipt",
     "otherGuestsAtThisTableStayActive": "Other guests at this table stay active.",
     "thisOrderIsNoLongerActive": "This order is no longer active.",
@@ -372,6 +375,10 @@
   },
   "subscription": {
     "premiumPlan": "Premium plan",
+    "lifetimeAccess": "Lifetime access",
+    "ordering": "Ordering",
+    "billing": "Billing",
+    "floorTeam": "Floor team",
     "aGreatStart": "A great start.",
     "15DaysToMakeYourselfAtHome": "15 days to make yourself at home.",
     "active": "Active",
@@ -639,7 +646,7 @@
     "error": "Printer needs attention",
     "printing": "Sending bill… Please keep the app open.",
     "continueWithoutPrinting": "Continue without printing",
-    "skipNote": "Your latest bill will be saved before opening the dashboard. The customer visit stays active so you can print later.",
+    "skipNote": "Your latest bill, customer details, date and total will be saved, and this customer will be cleared from the table before opening the dashboard.",
     "noPrinters": "No nearby devices found. Turn on the printer, put it in pairing mode, and keep it close to your phone.",
     "unnamed": "Unnamed device",
     "paired": "Paired",
@@ -649,7 +656,7 @@
     "openSettings": "Open phone settings",
     "settingsFailed": "Could not open settings. Open your phone settings and enable Bluetooth and printer access, then try again.",
     "useSystemPrinter": "Use device print service",
-    "statusNote": "Confirm your printer uses ESC/POS mode. Some printers cannot report paper, battery or hardware status. After sending, check the physical receipt before confirming or retrying.",
+    "statusNote": "Confirm your printer uses ESC/POS mode. Some printers cannot report paper, battery or hardware status. After sending, check the physical receipt before retrying.",
     "stopPrinting": "Stop sending",
     "previewNote": "Print using a compatible Bluetooth printer or your device’s print service.",
     "errors": {
@@ -675,10 +682,10 @@
       "tooLarge": "This receipt is too large for Bluetooth printing. Use the device print service, share a PDF, or continue without printing.",
       "unknown": "The printer could not complete this action. Check its power, paper, cover, battery and connection. Check for a partial receipt before trying again, or continue without printing."
     },
-    "localDraftNote": "The server could not save this bill. You can keep the latest draft on this phone and open the dashboard. Reopen this customer’s bill when connected to review and save it. The visit stays active.",
+    "localDraftNote": "The customer visit could not be completed. You can keep the latest bill draft on this phone and open the dashboard. Reopen this customer’s bill when connected to finish checkout. The customer stays on the table until the server confirms completion.",
     "keepDraftAndLeave": "Keep draft on phone & open dashboard",
     "localSaveFailed": "Could not keep this draft on your phone. Retry saving before leaving so your edits are preserved.",
     "restoredDraft": "A bill draft kept on this phone has been restored. Review and save it. If the server bill changed, reload it before continuing.",
-    "goToDashboard": "Go to dashboard without confirming print"
+    "goToDashboard": "Go to dashboard"
   }
 }

@@ -16,6 +16,7 @@ import {
 } from './support/apiFixtures';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { saveTokens } from '../src/services/auth/credentials';
+import { fixtureBill } from './support/billingFixtures';
 const originalAdapter = apiClient.defaults.adapter;
 const originalFormData = FormData;
 afterEach(() => {
@@ -163,9 +164,19 @@ test('phone lookup and password login never attach an existing access token', as
   ).toBe(true);
 });
 test('visit completion waits for a backend close response and returns the final snapshot bill', async () => {
-  const adapter = transport(() => bill);
+  const completedBill = {
+    ...fixtureBill,
+    orderId: bill.orderId,
+    table: bill.table,
+    billId: 'saved-bill-id',
+    billNumber: 'RF-1042',
+    savedAt: '2026-10-08T08:00:00.000Z',
+    closedAt: '2026-10-08T08:01:00.000Z',
+    isDraft: false,
+  };
+  const adapter = transport(() => completedBill);
   expect(await restaurantApi.closeOrder(restaurantId, bill.orderId)).toEqual(
-    bill,
+    completedBill,
   );
   expect(adapter.mock.calls[0][0].method).toBe('post');
   expect(adapter.mock.calls[0][0].url).toBe(
@@ -252,4 +263,38 @@ test('a failed restaurant save propagates the backend failure', async () => {
     }),
   ).rejects.toMatchObject({ message: 'Restaurant could not be saved.' });
   expect(adapter).toHaveBeenCalledTimes(1);
+});
+
+test('billing settlement sends the saved version tokens and returns the completed bill', async () => {
+  const { billingApi } = require('../src/api/billing');
+  const completed = {
+    ...fixtureBill,
+    revision: 1,
+    closedAt: '2026-10-08T08:01:00.000Z',
+  };
+  const adapter = transport(() => ({ finished: true, bill: completed }));
+  const tokens = {
+    expectedRevision: 1,
+    expectedOrderUpdatedAt: fixtureBill.sourceOrderUpdatedAt,
+  };
+  expect(await billingApi.settle(restaurantId, bill.orderId, tokens)).toEqual(
+    completed,
+  );
+  const request = adapter.mock.calls[0][0];
+  expect(request.method).toBe('post');
+  expect(request.url).toBe(
+    `/api/v1/restaurants/${restaurantId}/orders/${bill.orderId}/bill/settle`,
+  );
+  expect(JSON.parse(request.data)).toEqual(tokens);
+});
+
+test('billing settlement rejects an incomplete server completion response', async () => {
+  const { billingApi } = require('../src/api/billing');
+  transport(() => ({ finished: false, bill: fixtureBill }));
+  await expect(
+    billingApi.settle(restaurantId, bill.orderId, {
+      expectedRevision: 1,
+      expectedOrderUpdatedAt: fixtureBill.sourceOrderUpdatedAt,
+    }),
+  ).rejects.toThrow('The visit could not be completed.');
 });

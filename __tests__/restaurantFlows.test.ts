@@ -8,7 +8,7 @@ import {
 import { toE164Phone } from '../src/features/auth/validation';
 import { createReceiptHtml } from '../src/features/billing/receiptPrinting';
 import { formatCurrency } from '../src/utils/currency';
-import { mediaUrl, profileSession } from '../src/api/restoflow';
+import { mediaUrl, profileDetails, profileSession } from '../src/api/restoflow';
 import { account, bill, DEV_ORIGIN, PROD_ORIGIN } from './support/apiFixtures';
 import type { Dish } from '../src/features/restaurant/types';
 const menu: Dish[] = [
@@ -77,4 +77,32 @@ test('session roles come from server membership and media stays on the Worker or
     `${DEV_ORIGIN}/api/v1/media/users/key.png`,
   );
   expect(() => mediaUrl(`${PROD_ORIGIN}/api/v1/media/key.png`)).toThrow();
+});
+
+test('saved and restored account details use the same server fields', () => {
+  const user = {
+    ...account.user,
+    fullName: 'Saved User',
+    phoneNumber: '+919123456789',
+    profileImageUrl: '/api/v1/media/users/profile.jpg',
+  };
+  const details = profileDetails(user);
+  expect(details).toEqual({
+    userId: user.id,
+    name: 'Saved User',
+    phone: '+919123456789',
+    photo: `${DEV_ORIGIN}${user.profileImageUrl}`,
+  });
+  expect(profileSession({ ...account, user })).toMatchObject(details);
+});
+
+test.each([
+  { fullName: '' },
+  { fullName: 'x'.repeat(101) },
+  { phoneNumber: '' },
+  { profileImageUrl: undefined },
+])('rejects incomplete profile responses %j', invalid => {
+  expect(() =>
+    profileDetails({ ...account.user, ...invalid } as typeof account.user),
+  ).toThrow('The backend returned an invalid profile.');
 });

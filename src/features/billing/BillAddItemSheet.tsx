@@ -46,16 +46,20 @@ export function BillAddItemSheet({
       {dishes.map(dish => (
         <View key={dish.id} style={styles.row}>
           <View style={styles.food}>
-            <DishImage uri={dish.imageUrl} />
+            <DishImage uri={dish.imageUrl} category={dish.category} />
           </View>
           <View style={styles.info}>
-            <AppText>{dish.name}</AppText>
-            <AppText muted variant="small" style={styles.price}>
+            <AppText numberOfLines={1}>{dish.name}</AppText>
+            <AppText
+              muted
+              numberOfLines={1}
+              variant="small"
+              style={styles.price}
+            >
               {formatCurrency(dish.price)}
             </AppText>
           </View>
           <AppButton
-            wrapLabel
             variant="ghost"
             icon="plus"
             onPress={() => onAdd(dish)}
@@ -94,7 +98,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.food,
   },
-  info: { flex: 1 },
+  info: { flex: 1, minWidth: 0 },
   price: { marginTop: 6 },
   note: { marginTop: 28, marginBottom: 40 },
   empty: { textAlign: 'center', padding: 24 },

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Desserts — RestoFlow</title>
+  <desc>Gulab jamun, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <circle cx="280" cy="235" r="109" fill="#FFFDF6"/>
+  <circle cx="280" cy="235" r="97" fill="#E9C990"/>
+  <path d="M192 264C212 290 253 306 292 300C327 296 352 275 368 252C359 295 324 327 280 327C239 327 204 301 192 264Z" fill="#DFBC7F"/>
+  <circle cx="237" cy="211" r="42" fill="#A7683B"/>
+  <path d="M198 224C217 248 250 253 272 232C264 251 251 257 237 257C220 257 204 243 198 224Z" fill="#965B35"/>
+  <path d="M216 194C222 186 232 181 242 183" fill="none" stroke="#C58A50" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="322" cy="213" r="42" fill="#AD7040"/>
+  <path d="M284 226C304 249 335 255 358 234C350 253 337 259 322 259C305 259 290 245 284 226Z" fill="#965B35"/>
+  <path d="M301 196C307 188 317 183 327 185" fill="none" stroke="#CA9157" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="279" cy="279" r="42" fill="#A7683B"/>
+  <path d="M241 292C260 315 292 320 314 299C306 318 294 325 279 325C262 325 247 310 241 292Z" fill="#965B35"/>
+  <path d="M258 262C264 254 274 249 284 251" fill="none" stroke="#C58A50" stroke-width="7" stroke-linecap="round"/>
+  <path d="M230 209L236 217M242 206L247 212M315 211L320 220M327 207L333 211M271 277L278 284M285 274L290 281" stroke="#7C8A58" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="213" cy="275" rx="9" ry="4" fill="#F5DDAA"/>
+  <ellipse cx="347" cy="281" rx="8" ry="4" fill="#F5DDAA"/>
+  </g>
+</svg>

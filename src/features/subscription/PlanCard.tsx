@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '../../components/AppText';
 import { Icon } from '../../components/Icon';
 import { colors, layout } from '../../theme/tokens';
+import { PremiumPlanCard } from './PremiumPlanCard';
 
 export function PlanCard({
   isPremium,
@@ -17,12 +18,8 @@ export function PlanCard({
   trialDays: number;
 }) {
   const { t } = useTranslation();
-  const title = isPremium
-    ? t('subscription.premiumPlan')
-    : t('subscription.aGreatStart');
-  let description = t('api.trialDescription', { days: trialDays });
   if (isPremium) {
-    description = t('subscription.yourRestaurantInFullFlow');
+    return <PremiumPlanCard />;
   }
   return (
     <View style={styles.plan}>
@@ -30,39 +27,28 @@ export function PlanCard({
         <View style={styles.icon}>
           <Icon name="crown" color={colors.white} size={23} />
         </View>
-        {
-          <AppText style={styles.badge}>
-            •{' '}
-            {daysRemaining || isPremium
-              ? t('subscription.active')
-              : t('subscription.expired')}
-          </AppText>
-        }
+        <AppText style={styles.badge}>
+          •{' '}
+          {daysRemaining ? t('subscription.active') : t('subscription.expired')}
+        </AppText>
       </View>
       <AppText variant="heading" style={styles.title}>
-        {title}
+        {t('subscription.aGreatStart')}
       </AppText>
-      <AppText style={styles.copy}>{description}</AppText>
-      {isPremium && (
-        <AppText style={styles.premiumDetails}>
-          {t('subscription.orderingBillingYourFloorTeam')}
+      <AppText style={styles.copy}>
+        {t('api.trialDescription', { days: trialDays })}
+      </AppText>
+      <View style={styles.track}>
+        <View style={[styles.progress, { width: `${progress * 100}%` }]} />
+      </View>
+      <View style={[layout.row, styles.remaining]}>
+        <AppText style={styles.remainingLabel}>
+          {t('subscription.valueDaysRemaining', { value0: daysRemaining })}
         </AppText>
-      )}
-      {!isPremium && (
-        <>
-          <View style={styles.track}>
-            <View style={[styles.progress, { width: `${progress * 100}%` }]} />
-          </View>
-          <View style={[layout.row, styles.remaining]}>
-            <AppText style={styles.remainingLabel}>
-              {t('subscription.valueDaysRemaining', { value0: daysRemaining })}
-            </AppText>
-            <AppText style={styles.remainingLabel}>
-              {t('api.trialLabel', { days: trialDays })}
-            </AppText>
-          </View>
-        </>
-      )}
+        <AppText style={styles.remainingLabel}>
+          {t('api.trialLabel', { days: trialDays })}
+        </AppText>
+      </View>
     </View>
   );
 }
@@ -101,8 +87,4 @@ const styles = StyleSheet.create({
   progress: { height: 5, backgroundColor: '#c8d9b6', borderRadius: 10 },
   remaining: { marginTop: 12 },
   remainingLabel: { fontSize: 10, color: '#dae6da' },
-  premiumDetails: { fontSize: 12, color: '#dae6da' },
-  features: { gap: 18 },
-  feature: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  featureText: { fontSize: 12, color: colors.white, flex: 1 },
 });

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="420" viewBox="0 0 560 420" fill="none">
+  <title>Main Course — RestoFlow</title>
+  <desc>A warm curry bowl, in the warm, flat vector style of the RestoFlow Paneer Tikka reference.</desc>
+  
+  <g id="plate-and-shadow">
+  <ellipse cx="280" cy="310" rx="144" ry="37" fill="#DBD9CB"/>
+  <circle cx="280" cy="228" r="150" fill="#FFFDF6"/>
+  <circle cx="280" cy="228" r="125" fill="#EDE7D8"/>
+  </g>
+  <g id="food-illustration">
+  <rect x="165" y="207" width="38" height="48" rx="14" fill="#D8CEB9"/>
+  <rect x="357" y="207" width="38" height="48" rx="14" fill="#D8CEB9"/>
+  <circle cx="280" cy="234" r="107" fill="#D8CEB9"/>
+  <circle cx="280" cy="229" r="107" fill="#FFFDF6"/>
+  <circle cx="280" cy="229" r="91" fill="#D39A45"/>
+  <path d="M202 232C205 189 253 161 293 174C324 181 350 205 358 234C345 218 320 209 293 215C256 225 235 255 202 232Z" fill="#DFA951"/>
+  <path d="M235 205C254 183 294 185 313 206C328 222 318 241 296 247C276 253 255 246 254 233C253 222 271 217 286 221" fill="none" stroke="#F5D8A1" stroke-width="7" stroke-linecap="round"/>
+  <rect x="226" y="232" width="26" height="24" rx="5" transform="rotate(-13 239 244)" fill="#F5D8A1"/>
+  <rect x="305" y="252" width="26" height="24" rx="5" transform="rotate(12 318 264)" fill="#EBCB91"/>
+  <rect x="298" y="192" width="23" height="21" rx="5" transform="rotate(14 309 202)" fill="#EBCB91"/>
+  <path d="M265 261C246 247 244 263 263 272C272 270 274 265 265 261Z" fill="#62724E"/>
+  <path d="M269 263C267 240 285 247 279 264C275 272 270 272 269 263Z" fill="#78885A"/>
+  <path d="M274 267C289 251 301 268 282 275C275 278 271 274 274 267Z" fill="#62724E"/>
+  <ellipse cx="229" cy="205" rx="4" ry="3" fill="#B97A36"/>
+  <ellipse cx="331" cy="232" rx="5" ry="3" fill="#B97A36"/>
+  <ellipse cx="282" cy="292" rx="5" ry="3" fill="#B97A36"/>
+  </g>
+</svg>

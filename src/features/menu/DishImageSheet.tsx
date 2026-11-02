@@ -17,10 +17,14 @@ export function DishImageSheet({
   visible,
   onSelect,
   onClose,
+  canRemove,
+  onRemove,
 }: {
   visible: boolean;
   onSelect: (image: ProfilePhoto) => void;
   onClose: () => void;
+  canRemove?: boolean;
+  onRemove?: () => void;
 }) {
   const { t } = useTranslation();
   const [error, setError] = useState('');
@@ -98,6 +102,14 @@ export function DishImageSheet({
       <AppText muted variant="helper" style={styles.helper}>
         {t('menu.defaultImageStays')}
       </AppText>
+      {canRemove && onRemove && (
+        <SheetOption
+          icon="trash"
+          label={t('menu.removeSelectedPhoto')}
+          disabled={busy}
+          onPress={onRemove}
+        />
+      )}
       {!!error && (
         <AppText accessibilityRole="alert" style={styles.error}>
           {error}

@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native';
 import type { ProfilePhoto, Session } from '../restaurant/types';
 import type { AuthResult, ChangePasswordInput } from '../../api/types';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -17,7 +17,7 @@ import {
   getCredentials,
   saveTokens,
 } from '../../services/auth/credentials';
-import { authApi, mediaUrl, profileSession } from '../../api/restoflow';
+import { authApi, profileDetails, profileSession } from '../../api/restoflow';
 import { registerSessionExpiredHandler } from '../../api/client';
 import { normalizeApiError } from '../../api/errors';
 import { EmptyState } from '../../components/EmptyState';
@@ -41,6 +41,8 @@ export function SessionProvider({ children }: React.PropsWithChildren) {
   const [restoreError, setRestoreError] = useState('');
   const [attempt, setAttempt] = useState(0);
   const revision = useRef(0);
+  const profileRevision = useRef(0);
+  const updatingProfile = useRef(false);
   useEffect(
     () =>
       registerSessionExpiredHandler(() => {
@@ -78,20 +80,64 @@ export function SessionProvider({ children }: React.PropsWithChildren) {
   }, [dispatch, showFeedback, t]);
   const updateProfile = async (fullName: string, photo?: ProfilePhoto) => {
     if (!session) throw new Error('Please sign in again.');
+    updatingProfile.current = true;
+    // Invalidate earlier profile reads so they cannot restore an old photo.
     const expected = revision.current;
-    const user = await authApi.updateProfile(fullName, photo);
-    if (expected !== revision.current)
-      throw new Error('The session changed. Please sign in again.');
-    if (user.id !== session.userId || typeof user.fullName !== 'string')
-      throw new Error('The backend returned an invalid profile.');
-    dispatch(
-      signedIn({
-        ...session,
-        name: user.fullName,
-        photo: mediaUrl(user.profileImageUrl),
-      }),
-    );
+    const expectedProfile = ++profileRevision.current;
+    try {
+      const user = await authApi.updateProfile(fullName, photo);
+      if (
+        expected !== revision.current ||
+        expectedProfile !== profileRevision.current
+      )
+        throw new Error('The session changed. Please sign in again.');
+      if (user.id !== session.userId || (photo && !user.profileImageUrl))
+        throw new Error('The backend returned an invalid profile.');
+      profileRevision.current += 1;
+      dispatch(
+        signedIn({
+          ...session,
+          ...profileDetails(user),
+        }),
+      );
+    } finally {
+      updatingProfile.current = false;
+    }
   };
+  useEffect(() => {
+    if (!session?.userId) return;
+    const userId = session.userId;
+    let pending: AbortController | undefined;
+    let previousState = AppState.currentState;
+    const listener = AppState.addEventListener('change', state => {
+      const resumed = state === 'active' && previousState !== 'active';
+      previousState = state;
+      if (!resumed || updatingProfile.current) return;
+      pending?.abort();
+      const controller = new AbortController();
+      pending = controller;
+      const expected = revision.current;
+      const expectedProfile = profileRevision.current;
+      authApi
+        .me(controller.signal)
+        .then(profile => {
+          if (
+            controller.signal.aborted ||
+            expected !== revision.current ||
+            expectedProfile !== profileRevision.current ||
+            profile.user.id !== userId
+          )
+            return;
+          profileRevision.current += 1;
+          dispatch(signedIn(profileSession(profile)));
+        })
+        .catch(() => undefined);
+    });
+    return () => {
+      pending?.abort();
+      listener.remove();
+    };
+  }, [dispatch, session?.userId]);
   const changePassword = async (input: ChangePasswordInput) => {
     const expected = revision.current;
     await authApi.changePassword(input);

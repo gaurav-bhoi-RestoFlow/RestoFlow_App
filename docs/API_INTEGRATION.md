@@ -60,10 +60,52 @@ always sends the validated name and omits an unchanged photo.
 Settings exposes Edit profile and Change password to owners and waiters. Edit
 profile sends multipart `fullName` and an optional native `image` file to
 `PATCH /api/v1/auth/me`. Names are trimmed and validated at 2–100 characters;
-the existing photo picker accepts JPEG, PNG and WebP images up to 5 MB. Only a
-confirmed server response updates the shared session name/photo. Profile edits
-preserve the current restaurant data and navigation; startup restores the saved
-profile from the backend. Failed saves keep the draft available for retry.
+the shared profile picker prepares every selection on the device as a centered
+256 × 256 JPEG, starting at 80% quality and reducing quality only when needed to
+stay within 64 KiB. This applies to profile editing, owner registration, and
+waiter creation. Native decoding handles picker MIME aliases (including iOS
+`image/jpg`), HEIC, orientation/mirroring, and transparent images. Large originals
+are reduced before the output size is checked; originals and base64 strings are
+never uploaded. Both platforms discard image metadata when encoding the JPEG.
+
+Only a confirmed server response updates the shared session name/photo. A photo
+save must return a nonempty saved media URL. Profile edits preserve restaurant
+data and navigation and also update the owner's shared restaurant profile.
+Startup restores the saved profile from the backend, and returning from the
+background refreshes it again. Earlier reads cannot overwrite a newer saved
+photo. Failed saves preserve the previous shared avatar and the prepared draft
+for retry; canceled selections preserve the draft. Replaced/abandoned prepared
+files are removed from the device cache. Avatars fall back to initials on image
+load errors and create a fresh image view for each new media URL.
+
+Names and the other returned account details use the same validated mapping on
+save, sign-in, startup, and foreground refresh. Saving applies the backend's
+confirmed name, phone, and photo together while retaining restaurant membership.
+Edit profile currently supports name and photo changes. An untouched name field
+follows refreshed server data while the form is open; typed drafts remain intact
+for saving or retry. Owner and waiter name changes update settings, avatar names
+and initials, and survive reopening. Owner details also update the shared
+restaurant profile without resetting restaurant data or navigation.
+
+The existing backend stores replacements under a new UUID, saves that key in
+the user's record, and deletes the previous object after commit. Existing
+profile/storage tests cover rollback cleanup and owners/waiters independently
+of subscription status. No backend or database migration is needed for this
+mobile photo-processing change. The backend's general image-upload limit stays
+5 MB; these mobile profile uploads are capped at 64 KiB before sending.
+
+The native `ProfilePhoto` module is registered on Android and iOS. Rebuild and
+install the native app to use it; a JavaScript-only OTA cannot add the module.
+Android compilation is verified in this workspace; iOS compilation requires
+macOS/Xcode.
+
+Verification on 2 November 2026: 310 mobile tests, seven infrastructure checks,
+and 43 backend profile/query/service/OpenAPI tests passed. TypeScript passed;
+ESLint reported no errors and five existing warnings. The Android arm64
+development debug APK built successfully. The deployed DEV OpenAPI document
+advertises the profile PATCH contract. A standalone device codec harness was
+stopped by Android before processing its fixtures; photo selection/upload on a
+device and iOS compilation remain unverified. No backend deployment was made.
 
 Change password opens a separate screen with Old password, New password, and
 Confirm password. It validates the backend's 8–128 character limits and exact
@@ -108,9 +150,22 @@ editing. Newly created orders are written atomically by the backend. Drafts are
 unsaved UI state until the server confirms the mutation.
 
 Bills and receipts use `/orders/{id}/bill` totals and snapshot lines, retaining
-exact decimal money. Printing opens the real device print service. Finishing
-a visit waits for `/orders/{id}/close`; opening a print dialog alone does not
-complete the visit.
+exact decimal money. After successful Bluetooth/device printing or **Continue
+without printing**, the app closes that customer's visit through
+`POST /orders/{id}/bill/settle`. Printing first saves the immutable print-job
+snapshot; continuing without printing saves the latest edited bill before closing. The
+server retains the customer name, original visit date, saved line prices, total
+and `closedAt` completion time. Settlement sends the saved receipt's `revision`
+and exact `sourceOrderUpdatedAt`. The server checks both versions under an order
+lock, rejects unsaved/stale bills with HTTP 409, and preserves the completion
+timestamp on retries. No print job is required. The floor refreshes after closure;
+other guests stay active, and a table becomes available after its last customer finishes.
+Checkout failures keep the receipt open for retry, retaining a successful save
+or print dispatch so neither must be repeated. A lost close response is checked
+by reading the current bill. No physical-print confirmation is inferred; the
+print-gated `/bill/finish` endpoint is no longer part of mobile checkout.
+Release the backend settlement endpoint before this mobile update. No database
+migration is needed; the existing saved bills and order completion fields are used.
 
 ## Subscription and localization
 
@@ -169,7 +224,7 @@ or native device acceptance.
 - TypeScript passed; ESLint passed with three existing `no-void` warnings.
 - All 153 tests passed across 11 suites, including phone lookup branching,
   owner/waiter password login, registration validation and retries, changing
-  phone numbers, waiter password assignment, and native multipart registration.
+  phone numbers, waiter default phone-number passwords, and native multipart registration.
 - English/Marathi catalogs were updated and the generated backend English
   catalog/mobile version metadata passed synchronization checks.
 - Remote authentication, account provisioning, migrations, deployment, and

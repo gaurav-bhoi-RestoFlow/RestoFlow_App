@@ -8,6 +8,10 @@ export interface BillDraft {
   expectedOrderUpdatedAt: string;
   items: Omit<BillLine, 'lineTotal'>[];
 }
+export type BillSettlement = Pick<
+  BillDraft,
+  'expectedRevision' | 'expectedOrderUpdatedAt'
+>;
 export interface CustomerBill {
   orderId: string;
   billId: string | null;
@@ -141,6 +145,19 @@ export const billingApi = {
       `${base(restaurantId, orderId)}/finish`,
       { printJobId },
     ),
+  settle: async (
+    restaurantId: string,
+    orderId: string,
+    input: BillSettlement,
+  ) => {
+    const result = await requestData<{ finished: boolean; bill: CustomerBill }>(
+      'POST',
+      `${base(restaurantId, orderId)}/settle`,
+      input,
+    );
+    if (!result.finished) throw new Error('The visit could not be completed.');
+    return result.bill;
+  },
   share: (
     restaurantId: string,
     orderId: string,
