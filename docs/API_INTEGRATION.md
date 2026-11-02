@@ -196,6 +196,38 @@ responses carrying the correct environment header. No business data was
 written by these acceptance checks. Production configuration/deployment was
 not changed; its exact health URL still returned HTTP 500 `CONFIGURATION_ERROR`.
 
+## Shared floor and sequential table numbers
+
+The mobile flow follows the sibling backend's table and billing contracts in
+`docs/API_GUIDE.md` and `docs/BILLING_API.md`. Only restaurant owners see table
+creation and deletion controls. Owners and all active waiters read the same
+restaurant floor and table customers, including orders saved by other waiters.
+
+Table UUIDs identify navigation routes, list keys, customers and orders. Display
+numbers come from the server's `tableNumber`; deleting an available table
+renumbers the remaining tables to `1..N`, and the next creation receives `N+1`.
+The app reloads the server floor after mutations instead of calculating numbers
+locally. A deletion conflict or missing table dismisses confirmation and reloads
+the floor so another staff member's changes become visible.
+
+Dashboard and customer screens refresh on focus and support pull-to-refresh.
+Customer refreshes also update the shared floor, keeping table headings and
+subsequent order navigation aligned with renumbering or deletion on another
+device. Newer customer reads cancel earlier reads so stale results cannot replace
+the latest shared guest list. Owners see effective bill totals; waiters see the
+original order totals returned by the customer endpoint.
+
+The backend's sequential numbering requires
+`drizzle/0010_sequential_table_numbers.sql` and the matching backend release.
+Local mobile verification uses mocked HTTP transport; it does not apply that
+migration or deploy the backend.
+
+Verification on 2 November 2026: all 290 mobile tests passed across 18 suites,
+including renumbering, stable UUID routes, owner-only controls, shared customers,
+deletion conflicts and cancellation of stale customer reads. The backend's 96
+business route/query/service, billing route and OpenAPI tests also passed.
+Mobile TypeScript passed; ESLint reported no errors and five existing warnings.
+
 ## Menu management API
 
 The backend source at `../restoflow_backend/src/modules/menu` mounts these routes under

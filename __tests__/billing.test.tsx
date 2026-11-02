@@ -4,7 +4,11 @@ import { Linking, NativeModules, Platform, TextInput } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RNPrint from 'react-native-print';
 import '../src/localization/i18n';
-import { billingApi, type CustomerBill } from '../src/api/billing';
+import {
+  billingApi,
+  type CustomerBill,
+  type TableCustomers,
+} from '../src/api/billing';
 import { restaurantApi } from '../src/api/restoflow';
 import {
   billDraft,
@@ -570,6 +574,66 @@ test('customer pagination includes every page and keeps waiter order totals sepa
   expect(hook.customers.every(customer => customer.total === '420.00')).toBe(
     true,
   );
+});
+
+test('a newer customer refresh wins over an older response and blur cancels pending reads', async () => {
+  const page = (name: string): TableCustomers => ({
+    table: { id: 'table-1', name: 'Table 1' },
+    guestCount: 1,
+    customers: [
+      {
+        orderId: name,
+        name,
+        createdAt: bill.orderedAt,
+        items: bill.items,
+        orderItems: bill.items,
+        itemCount: bill.itemCount,
+        orderItemCount: bill.itemCount,
+        total: bill.total,
+        orderTotal: bill.total,
+        orderChanged: false,
+      },
+    ],
+    pagination: { total: 1, hasMore: false },
+  });
+  let resolveOlder!: (value: TableCustomers) => void;
+  const older = new Promise<TableCustomers>(resolve => {
+    resolveOlder = resolve;
+  });
+  const customers = jest
+    .spyOn(billingApi, 'customers')
+    .mockImplementationOnce(() => older)
+    .mockResolvedValueOnce(page('Latest shared guest'));
+  let hook!: ReturnType<typeof useTableCustomers>;
+  function Harness() {
+    hook = useTableCustomers('restaurant-1', 'table-1', false);
+    return null;
+  }
+  await render(<Harness />);
+  const olderSignal = customers.mock.calls[0][3]!;
+  await act(async () => hook.load());
+  expect(olderSignal.aborted).toBe(true);
+  expect(hook.customers[0].name).toBe('Latest shared guest');
+  await act(async () => resolveOlder(page('Stale guest')));
+  expect(hook.customers[0].name).toBe('Latest shared guest');
+  expect(hook.loading).toBe(false);
+
+  let resolvePending!: (value: TableCustomers) => void;
+  customers.mockImplementationOnce(
+    () =>
+      new Promise(resolve => {
+        resolvePending = resolve;
+      }),
+  );
+  let pendingRead!: Promise<void>;
+  await act(async () => {
+    pendingRead = hook.load();
+  });
+  const pendingSignal = customers.mock.calls[2][3]!;
+  await act(async () => renderer.unmount());
+  expect(pendingSignal.aborted).toBe(true);
+  resolvePending(page('After leaving the screen'));
+  await pendingRead;
 });
 
 test('returning from a preview preserves unsaved lines then accepts a matching saved revision', async () => {

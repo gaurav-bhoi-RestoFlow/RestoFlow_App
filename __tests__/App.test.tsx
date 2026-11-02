@@ -5,6 +5,7 @@ import { getCredentials, saveTokens } from '../src/services/auth/credentials';
 import App from '../App';
 import { apiClient } from '../src/api/client';
 import { AppInput } from '../src/components/AppInput';
+import { AppText } from '../src/components/AppText';
 import { AppButton } from '../src/components/AppButton';
 import { DashboardScreen } from '../src/features/tables/DashboardScreen';
 import { RegistrationScreen } from '../src/features/auth/RegistrationScreen';
@@ -661,6 +662,13 @@ test('rapid registration submissions send one save request', async () => {
 test('owners assign a valid password when adding a waiter account', async () => {
   await saveTokens(account);
   const renderer = await render();
+  // Native refresh controls contain React objects; inspect displayed text directly.
+  const textContent = () =>
+    renderer.root
+      .findAllByType(AppText)
+      .map(node => node.props.children)
+      .filter(value => typeof value === 'string')
+      .join('\n');
   await ReactTestRenderer.act(async () =>
     renderer.root
       .findByType(FloatingTabBar)
@@ -684,7 +692,7 @@ test('owners assign a valid password when adding a waiter account', async () => 
       ([config]) => config.url.endsWith('/waiters') && config.method === 'post',
     ),
   ).toBe(false);
-  expect(JSON.stringify(renderer.toJSON())).toContain(
+  expect(textContent()).toContain(
     'Password must be between 8 and 128 characters.',
   );
   await fill(renderer, { Password: ' waiter-password ' });
@@ -698,7 +706,7 @@ test('owners assign a valid password when adding a waiter account', async () => 
     password: ' waiter-password ',
   });
   expect(request.headers.get('Authorization')).toBe('Bearer access-token');
-  expect(JSON.stringify(renderer.toJSON())).toContain('New Waiter');
-  expect(JSON.stringify(renderer.toJSON())).not.toContain('waiter-password');
+  expect(textContent()).toContain('New Waiter');
+  expect(textContent()).not.toContain('waiter-password');
   await ReactTestRenderer.act(async () => renderer.unmount());
 });

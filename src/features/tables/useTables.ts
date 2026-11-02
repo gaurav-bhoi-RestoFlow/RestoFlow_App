@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { useFeedback } from '../../app/FeedbackProvider';
 import { useSession } from '../auth/SessionProvider';
 import { useRestaurant } from '../restaurant/RestaurantProvider';
@@ -8,7 +9,7 @@ import { normalizeApiError } from '../../api/errors';
 export type TableFilter = 'All tables' | 'Available' | 'Occupied';
 export function useTables() {
   const { t } = useTranslation();
-  const { restaurant, refresh } = useRestaurant();
+  const { restaurant, refresh, refreshing } = useRestaurant();
   const { session } = useSession();
   const showFeedback = useFeedback();
   const [filter, setFilter] = useState<TableFilter>('All tables');
@@ -17,6 +18,10 @@ export function useTables() {
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);
   const canManage = session?.role === 'owner';
+  const refreshTables = useCallback(() => {
+    refresh().catch(error => showFeedback(normalizeApiError(error).message));
+  }, [refresh, showFeedback]);
+  useFocusEffect(refreshTables);
   const visibleTables = restaurant.tables.filter(
     table =>
       filter === 'All tables' ||
@@ -30,7 +35,16 @@ export function useTables() {
       await operation();
       await refresh();
     } catch (error) {
-      showFeedback(normalizeApiError(error).message);
+      const failure = normalizeApiError(error);
+      if (
+        failure.code === 'TABLE_HAS_OPEN_ORDER' ||
+        failure.code === 'TABLE_NOT_FOUND'
+      ) {
+        setTableToRemove(null);
+        // Another staff member may have changed this table since the last read.
+        await refresh().catch(() => undefined);
+      }
+      showFeedback(failure.message);
     } finally {
       pending.current = false;
       setBusy(false);
@@ -55,6 +69,8 @@ export function useTables() {
   }
   return {
     restaurant,
+    refreshing,
+    refreshTables,
     canManage,
     busy,
     occupiedCount: restaurant.dashboard?.occupiedTables ?? 0,

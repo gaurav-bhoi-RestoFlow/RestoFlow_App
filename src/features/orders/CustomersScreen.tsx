@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { RootScreenProps } from '../../app/navigationTypes';
+import { useFeedback } from '../../app/FeedbackProvider';
+import { normalizeApiError } from '../../api/errors';
 import { Screen } from '../../components/Screen';
 import { AppHeader } from '../../components/AppHeader';
 import { AppButton } from '../../components/AppButton';
@@ -19,7 +22,12 @@ export function CustomersScreen({
   route,
 }: RootScreenProps<'Customers'>) {
   const { t } = useTranslation();
-  const { restaurant } = useRestaurant();
+  const { restaurant, refresh, refreshing } = useRestaurant();
+  const showFeedback = useFeedback();
+  const refreshFloor = useCallback(() => {
+    refresh().catch(error => showFeedback(normalizeApiError(error).message));
+  }, [refresh, showFeedback]);
+  useFocusEffect(refreshFloor);
   const { session } = useSession();
   const table = restaurant.tables.find(
     item => item.id === route.params.tableId,
@@ -68,8 +76,9 @@ export function CustomersScreen({
           {t('orders.addCustomer')}
         </AppButton>
       }
-      refreshing={guests.loading}
+      refreshing={guests.loading || refreshing}
       onRefresh={() => {
+        refreshFloor();
         guests.load();
       }}
     >

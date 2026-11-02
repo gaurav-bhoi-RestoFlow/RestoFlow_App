@@ -43,6 +43,8 @@ export function DashboardScreen({
     <>
       <Screen
         hasTabs
+        refreshing={tables.refreshing}
+        onRefresh={tables.refreshTables}
         header={
           <AppHeader
             title={t('dashboard.todaySFloor')}
