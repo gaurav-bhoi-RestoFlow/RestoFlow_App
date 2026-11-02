@@ -20,7 +20,7 @@ the environment even for release JavaScript bundles.
 
 The login screen starts with a phone field. Continue normalizes it to E.164 and calls public `POST /api/v1/auth/phone/check` with `{phoneNumber}`. A registered number reveals the password field on the same screen; Sign in sends `{phoneNumber, password}` to public `POST /api/v1/auth/login`. Editing the phone clears the password and lookup result, so the next Continue checks the new number. Failed or invalid lookups stay on the phone screen and allow retry.
 
-An unregistered number opens restaurant registration with its phone prefilled. Password and Confirm password follow the restaurant name, owner name, and mobile number fields. Create account validates names, phone, the backend’s 8–128 character password limit, and exact confirmation, then sends multipart `phoneNumber`, `password`, `confirmPassword`, `fullName`, `restaurantName`, and optional `image` to public `POST /api/v1/onboarding/owner/complete`. Passwords preserve whitespace. The backend atomically saves the account and restaurant and returns the session; the app opens the dashboard only after success. Failed saves preserve the form for retry. Owners also provide an assigned password when creating waiter accounts.
+An unregistered number opens restaurant registration with its phone prefilled. Password and Confirm password follow the restaurant name, owner name, and mobile number fields. Create account validates names, phone, the backend’s 8–128 character password limit, and exact confirmation, then sends multipart `phoneNumber`, `password`, `confirmPassword`, `fullName`, `restaurantName`, and optional `image` to public `POST /api/v1/onboarding/owner/complete`. Passwords preserve whitespace. The backend atomically saves the account and restaurant and returns the session; the app opens the dashboard only after success. Failed saves preserve the form for retry. Owners create waiter accounts with a name, mobile number and optional photo; the server assigns the saved E.164 mobile number (including +91) as the initial password.
 
 OTP challenges, code inputs, resend actions, onboarding proofs, and authentication mocks are removed. None of the public authentication requests attach an existing access token, and invalid credentials never trigger session refresh. No phone is initially prefilled and no phone lookup signs a user in. Roles and restaurant IDs come from the server’s current account profile. Passwords and confirmation remain in form state only; persisted sessions contain tokens and account details.
 
@@ -287,3 +287,22 @@ confirmed deletion against DEV. The resulting database fields were checked befor
 removing this run's synthetic account, restaurant, sessions, dishes and uploaded images.
 No OTP endpoint was called. Production was unchanged. See the
 [native acceptance capture](../design/menu-api-native-acceptance.png).
+
+## Waiter creation and team list
+
+Add waiter asks for the waiter’s name, mobile number, and optional photo. It sends
+`POST /api/v1/restaurants/{restaurantId}/waiters` with `fullName` and E.164
+`phoneNumber`, using JSON without a photo or multipart with `image`. The app
+omits `password`; the backend hashes the saved phone number as the initial
+password, including `+` and country code (for example, `+919876543210`). The waiter
+can change it through Settings after signing in.
+
+After a successful save, the app immediately caches the returned waiter and
+returns to Your waiter team. Each time this screen gains focus, including after
+creation, it calls `GET /api/v1/restaurants/{restaurantId}/waiters` with
+`status=ACTIVE`, `limit=100`, and successive `offset` values until every active
+waiter is loaded. The list shows each waiter’s name, mobile number, and photo or
+initials. Pull to refresh and Retry use the same GET API without reloading tables,
+menu, or orders. Failed list reads preserve cached waiters, display a retryable
+error, and never resubmit a successfully created account. Requests are cancelled
+on blur and older dashboard refreshes cannot overwrite newer waiter changes.

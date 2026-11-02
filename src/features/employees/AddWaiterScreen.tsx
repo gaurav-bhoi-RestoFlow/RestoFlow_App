@@ -19,12 +19,11 @@ export function AddWaiterScreen({ navigation }: RootScreenProps<'AddWaiter'>) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
   const { photo, selectPhoto } = useProfilePhoto();
   const { error, busy, addWaiter } = useWaiters();
   const showFeedback = useFeedback();
   const handleAddWaiter = async () => {
-    if (await addWaiter(name, phone, password, photo)) {
+    if (await addWaiter(name, phone, photo)) {
       navigation.goBack();
       showFeedback(
         t('employees.valueAddedToYourTeam', { value0: name.trim() }),
@@ -68,6 +67,7 @@ export function AddWaiterScreen({ navigation }: RootScreenProps<'AddWaiter'>) {
         editable={!busy}
         onChangeText={setName}
         placeholder={t('employees.eGSneha')}
+        maxLength={100}
       />
       <AppInput
         label={t('employees.mobileNumber')}
@@ -76,18 +76,6 @@ export function AddWaiterScreen({ navigation }: RootScreenProps<'AddWaiter'>) {
         editable={!busy}
         onChangeText={value => setPhone(normalizePhone(value))}
         placeholder={t('employees.10DigitMobileNumber')}
-      />
-      <AppInput
-        label={t('auth.password')}
-        placeholder={t('auth.createPassword')}
-        value={password}
-        onChangeText={setPassword}
-        editable={!busy}
-        secureTextEntry
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="new-password"
-        textContentType="newPassword"
         returnKeyType="done"
         onSubmitEditing={handleAddWaiter}
       />

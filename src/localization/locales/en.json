@@ -303,16 +303,19 @@
     "eGSneha": "e.g. Sneha",
     "mobileNumber": "Mobile number",
     "10DigitMobileNumber": "10-digit mobile number",
-    "thisNumberGivesTheWaiterAccessToTablesAnd": "The waiter signs in with this mobile number and password to access tables and orders.",
+    "thisNumberGivesTheWaiterAccessToTablesAnd": "The waiter’s initial password is their mobile number including +91 (e.g. +919876543210). They can change it in Settings after signing in.",
     "yourWaiterTeam": "Your waiter team",
     "goodServiceStartsWithGoodPeople": "Good service starts with good people.",
     "valueTeamMembers": "{{value0}} team members",
     "waiter": "Waiter",
-    "waitersUseTheirMobileNumberToJoinYourRestaurant": "Waiters use their mobile number and assigned password to join your restaurant’s floor.",
+    "waitersUseTheirMobileNumberToJoinYourRestaurant": "New waiters sign in with their mobile number. Their initial password is the same number including +91; they can change it in Settings.",
     "buildYourFloorTeam": "Build your floor team",
-    "addYourFirstWaiterTheirMobileNumberWillConnect": "Add your first waiter and assign a password so they can sign in to your restaurant.",
+    "addYourFirstWaiterTheirMobileNumberWillConnect": "Add your first waiter with their name and mobile number. Their initial password will be their mobile number including +91.",
     "addANameAndValidMobileNumber": "Add a name and valid mobile number.",
-    "thisMobileNumberAlreadyBelongsToAnAccount": "This mobile number already belongs to an account."
+    "thisMobileNumberAlreadyBelongsToAnAccount": "This mobile number already belongs to an account.",
+    "enterWaiterFullName": "Enter the waiter’s full name (2–100 characters).",
+    "loadingWaiters": "Loading waiters",
+    "loadWaitersFailed": "Could not load your waiter team"
   },
   "orders": {
     "valueDishesValueItems": "{{value0}} dishes · {{value1}} items",

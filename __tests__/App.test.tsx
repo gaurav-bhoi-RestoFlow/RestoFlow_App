@@ -659,7 +659,7 @@ test('rapid registration submissions send one save request', async () => {
   await ReactTestRenderer.act(async () => renderer.unmount());
 });
 
-test('owners assign a valid password when adding a waiter account', async () => {
+test('owners add waiters without entering or sending a password', async () => {
   await saveTokens(account);
   const renderer = await render();
   // Native refresh controls contain React objects; inspect displayed text directly.
@@ -681,21 +681,15 @@ test('owners assign a valid password when adding a waiter account', async () => 
       .props.onPress(),
   );
   await press(renderer, 'Add waiter');
+  expect(
+    renderer.root
+      .findAllByType(AppInput)
+      .some(input => input.props.label === 'Password'),
+  ).toBe(false);
   await fill(renderer, {
     'Waiter name': '  New Waiter  ',
     'Mobile number': '9876543214',
-    Password: 'short',
   });
-  await press(renderer, 'Add waiter');
-  expect(
-    adapter.mock.calls.some(
-      ([config]) => config.url.endsWith('/waiters') && config.method === 'post',
-    ),
-  ).toBe(false);
-  expect(textContent()).toContain(
-    'Password must be between 8 and 128 characters.',
-  );
-  await fill(renderer, { Password: ' waiter-password ' });
   await press(renderer, 'Add waiter');
   const request = adapter.mock.calls.find(
     ([config]) => config.url.endsWith('/waiters') && config.method === 'post',
@@ -703,7 +697,6 @@ test('owners assign a valid password when adding a waiter account', async () => 
   expect(JSON.parse(request.data)).toEqual({
     fullName: 'New Waiter',
     phoneNumber: '+919876543214',
-    password: ' waiter-password ',
   });
   expect(request.headers.get('Authorization')).toBe('Bearer access-token');
   expect(textContent()).toContain('New Waiter');

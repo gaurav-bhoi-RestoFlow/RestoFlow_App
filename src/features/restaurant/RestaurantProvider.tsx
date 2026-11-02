@@ -14,12 +14,13 @@ import { normalizeApiError } from '../../api/errors';
 import { AppButton } from '../../components/AppButton';
 import { EmptyState } from '../../components/EmptyState';
 import { hideStartupSplash } from '../../app/bootstrap';
-import type { Dish, Restaurant } from './types';
+import type { Dish, Restaurant, Waiter } from './types';
 interface RestaurantContextValue {
   restaurant: Restaurant | null;
   refresh: () => Promise<void>;
   refreshing: boolean;
   updateMenu: (update: (dishes: Dish[]) => Dish[]) => void;
+  updateWaiters: (update: (waiters: Waiter[]) => Waiter[]) => void;
 }
 const RestaurantContext = createContext<RestaurantContextValue | null>(null);
 export function RestaurantProvider({ children }: React.PropsWithChildren) {
@@ -40,6 +41,18 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
   const generation = useRef(0);
   const pending = useRef<AbortController | null>(null);
   const menuRevision = useRef(0);
+  const waiterRevision = useRef(0);
+  const updateWaiters = useCallback(
+    (update: (waiters: Waiter[]) => Waiter[]) => {
+      waiterRevision.current += 1;
+      setRestaurant(current =>
+        current && loadedFor.current === latestAccountKey.current
+          ? { ...current, waiters: update(current.waiters) }
+          : current,
+      );
+    },
+    [],
+  );
   const updateMenu = useCallback((update: (dishes: Dish[]) => Dish[]) => {
     menuRevision.current += 1;
     setRestaurant(current =>
@@ -57,6 +70,7 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
     const expected = ++generation.current;
     const expectedAccountKey = latestAccountKey.current;
     const menuVersion = menuRevision.current;
+    const waiterVersion = waiterRevision.current;
     setRefreshing(true);
     try {
       const value = await fetchRestaurant(account, controller.signal);
@@ -71,6 +85,10 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
             current && menuVersion !== menuRevision.current
               ? current.menu
               : value.menu,
+          waiters:
+            current && waiterVersion !== waiterRevision.current
+              ? current.waiters
+              : value.waiters,
         }));
         setError('');
       }
@@ -97,6 +115,10 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
                 current && menuVersion !== menuRevision.current
                   ? current.menu
                   : value.menu,
+              waiters:
+                current && waiterVersion !== waiterRevision.current
+                  ? current.waiters
+                  : value.waiters,
             }));
             setError('');
           }
@@ -137,6 +159,7 @@ export function RestaurantProvider({ children }: React.PropsWithChildren) {
         refresh,
         refreshing,
         updateMenu,
+        updateWaiters,
       }}
     >
       {!session || available ? (

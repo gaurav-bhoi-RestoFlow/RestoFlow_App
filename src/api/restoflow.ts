@@ -22,6 +22,7 @@ import type {
   ProfilePhoto,
   Restaurant,
   Session,
+  Waiter,
 } from '../features/restaurant/types';
 export async function requestData<T>(
   method: string,
@@ -166,6 +167,14 @@ export function menuDish(dish: ApiDish): Dish {
     imageUrl: mediaUrl(dish.imageUrl),
   };
 }
+export function waiterDetails(waiter: ApiWaiter): Waiter {
+  return {
+    id: waiter.id,
+    name: waiter.fullName,
+    phone: waiter.phoneNumber,
+    photo: mediaUrl(waiter.profileImageUrl),
+  };
+}
 export const restaurantApi = {
   subscription: (id: string, signal?: AbortSignal) =>
     requestData<Subscription>('GET', `${base(id)}/subscription`, undefined, {
@@ -185,16 +194,17 @@ export const restaurantApi = {
     id: string,
     fullName: string,
     phoneNumber: string,
-    password: string,
     image?: ProfilePhoto,
   ) =>
     requestData<ApiWaiter>(
       'POST',
       `${base(id)}/waiters`,
       image
-        ? photoForm({ fullName, phoneNumber, password }, image)
-        : { fullName, phoneNumber, password },
+        ? photoForm({ fullName, phoneNumber }, image)
+        : { fullName, phoneNumber },
     ),
+  listWaiters: (id: string, signal?: AbortSignal) =>
+    listPages<ApiWaiter>(`${base(id)}/waiters`, { status: 'ACTIVE' }, signal),
   getOrder: (id: string, orderId: string, signal?: AbortSignal) =>
     requestData<ApiOrder>(
       'GET',
@@ -310,11 +320,7 @@ export async function fetchRestaurant(
         signal,
       }),
       session.role === 'owner'
-        ? listPages<ApiWaiter>(
-            `${base(id)}/waiters`,
-            { status: 'ACTIVE' },
-            signal,
-          )
+        ? restaurantApi.listWaiters(id, signal)
         : Promise.resolve([]),
     ]);
   return {
@@ -325,12 +331,7 @@ export async function fetchRestaurant(
     photo: mediaUrl(detail.owner.profileImageUrl),
     dashboard,
     menu: menu.map(menuDish),
-    waiters: waiters.map(value => ({
-      id: value.id,
-      name: value.fullName,
-      phone: value.phoneNumber,
-      photo: mediaUrl(value.profileImageUrl),
-    })),
+    waiters: waiters.map(waiterDetails),
     tables: tables.map(value => ({
       id: value.id,
       number: value.tableNumber,

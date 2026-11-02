@@ -303,16 +303,19 @@
     "eGSneha": "उदा. स्नेहा",
     "mobileNumber": "मोबाईल क्रमांक",
     "10DigitMobileNumber": "१० अंकी मोबाईल क्रमांक",
-    "thisNumberGivesTheWaiterAccessToTablesAnd": "वेटर या मोबाईल क्रमांकाने आणि पासवर्डने प्रवेश करून टेबल आणि ऑर्डर पाहू शकतो.",
+    "thisNumberGivesTheWaiterAccessToTablesAnd": "वेटरचा सुरुवातीचा पासवर्ड म्हणजे +91 सह त्यांचा मोबाईल क्रमांक (उदा. +919876543210). प्रवेश केल्यानंतर ते सेटिंग्जमध्ये पासवर्ड बदलू शकतात.",
     "yourWaiterTeam": "तुमची वेटर टीम",
     "goodServiceStartsWithGoodPeople": "चांगल्या लोकांपासून चांगली सेवा सुरू होते.",
     "valueTeamMembers": "टीममधील {{value0}} सदस्य",
     "waiter": "वेटर",
-    "waitersUseTheirMobileNumberToJoinYourRestaurant": "वेटर मोबाईल क्रमांक आणि दिलेला पासवर्ड वापरून रेस्टॉरंटमध्ये प्रवेश करतात.",
+    "waitersUseTheirMobileNumberToJoinYourRestaurant": "नवीन वेटर मोबाईल क्रमांकाने प्रवेश करतात. त्यांचा सुरुवातीचा पासवर्ड +91 सह तोच क्रमांक असतो; ते सेटिंग्जमध्ये पासवर्ड बदलू शकतात.",
     "buildYourFloorTeam": "तुमची सेवा टीम तयार करा",
-    "addYourFirstWaiterTheirMobileNumberWillConnect": "तुमचा पहिला वेटर जोडा आणि रेस्टॉरंटमध्ये प्रवेश करण्यासाठी पासवर्ड द्या.",
+    "addYourFirstWaiterTheirMobileNumberWillConnect": "नाव आणि मोबाईल क्रमांक देऊन तुमचा पहिला वेटर जोडा. त्यांचा सुरुवातीचा पासवर्ड +91 सह त्यांचा मोबाईल क्रमांक असेल.",
     "addANameAndValidMobileNumber": "नाव आणि वैध मोबाईल क्रमांक द्या.",
-    "thisMobileNumberAlreadyBelongsToAnAccount": "हा मोबाईल क्रमांक आधीच एका खात्याशी जोडलेला आहे."
+    "thisMobileNumberAlreadyBelongsToAnAccount": "हा मोबाईल क्रमांक आधीच एका खात्याशी जोडलेला आहे.",
+    "enterWaiterFullName": "वेटरचे पूर्ण नाव लिहा (2–100 अक्षरे).",
+    "loadingWaiters": "वेटरची यादी लोड होत आहे",
+    "loadWaitersFailed": "वेटरची यादी लोड करता आली नाही"
   },
   "orders": {
     "valueDishesValueItems": "{{value0}} पदार्थ · {{value1}} नग",
