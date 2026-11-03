@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     precondition(environment == RNCConfig.env(for: "APP_ENV"), "Native application environment mismatch")
     let development = environment == "development"
     let expectedId = development ? "org.reactjs.native.example.RestoFlow.dev" : "org.reactjs.native.example.RestoFlow"
-    let expectedProject = development ? "6aca897a03fc44c9897cf2b5" : "6aca880b9f76d8bbbc714eef"
+    let expectedProject = "6aca880b9f76d8bbbc714eef"
     precondition(Bundle.main.bundleIdentifier == expectedId, "Native application identity mismatch")
     precondition(Bundle.main.object(forInfoDictionaryKey: "StallionProjectId") as? String == expectedProject, "Stallion project mismatch")
     let delegate = ReactNativeDelegate()

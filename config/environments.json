@@ -5,8 +5,9 @@
     "iosBundleId": "org.reactjs.native.example.RestoFlow.dev",
     "displayName": "RestoFlow Dev",
     "iosScheme": "RestoFlowDev",
-    "stallionProject": "restoflow-dev",
-    "stallionProjectId": "6aca897a03fc44c9897cf2b5",
+    "stallionProject": "restoflow",
+    "stallionProjectId": "6aca880b9f76d8bbbc714eef",
+    "stallionBucket": "dev",
     "apiOrigin": "https://restoflow-backend-dev.gauravbhoiofficial.workers.dev"
   },
   "production": {
@@ -17,6 +18,7 @@
     "iosScheme": "RestoFlowProd",
     "stallionProject": "restoflow",
     "stallionProjectId": "6aca880b9f76d8bbbc714eef",
+    "stallionBucket": "prod",
     "apiOrigin": "https://restoflow-backend.gauravbhoiofficial.workers.dev"
   }
 }

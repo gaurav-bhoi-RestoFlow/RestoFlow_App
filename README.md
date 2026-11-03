@@ -77,7 +77,7 @@ configuration and verification. Translation requests use the same pinned Worker 
 
 ## Application infrastructure
 
-Axios, Redux Toolkit, native environment configuration, MMKV, BootSplash and Stallion are integrated. DEV and PROD use separate Android flavors, iOS schemes, application identities and native Stallion project IDs. Authentication uses phone numbers and passwords, backend-issued tokens, and persisted server sessions. Passwords are not persisted on the device.
+Axios, Redux Toolkit, native environment configuration, MMKV, BootSplash and Stallion are integrated. DEV and PROD use separate Android flavors, iOS schemes and application identities, with one shared Stallion project and separate `dev`/`prod` upload buckets. Authentication uses phone numbers and passwords, backend-issued tokens, and persisted server sessions. Passwords are not persisted on the device.
 
 Use `npm run android:dev` / `npm run android:prod`, or on macOS `npm run ios:dev` / `npm run ios:prod`.
 
@@ -91,8 +91,11 @@ the user's wallpaper palette. Icon changes require a native rebuild and reinstal
 Release builds bundle JavaScript into the app and require real signing and environment-specific Stallion configuration. Adding secure credential storage requires a native rebuild; an OTA update alone is insufficient. On macOS, reinstall CocoaPods before building iOS.
 
 Before running `yarn android:dev:release`, copy `.env.stallion.local.example` to
-`.env.stallion.local` and set `STALLION_DEV_APP_TOKEN` to the App Token from the
-`restoflow-dev` Stallion project. This file is ignored by Git. You can check the
+`.env.stallion.local` and set both `STALLION_DEV_APP_TOKEN` and
+`STALLION_PROD_APP_TOKEN` to the App Token from the shared `restoflow` Stallion
+project. Upload paths are `nexgen/restoflow/dev` and `nexgen/restoflow/prod`.
+Buckets organize uploads; automatic releases target the project and app version.
+This file is ignored by Git. You can check the
 configuration with `node scripts/validate-environment.mjs development --release`.
 
 See [docs/INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) for exact versions, setup, native identities, signing, OTA publishing, rollout and rollback. [docs/INFRASTRUCTURE_VERIFICATION.md](docs/INFRASTRUCTURE_VERIFICATION.md) records completed checks, remaining checks, and the implementation file list.

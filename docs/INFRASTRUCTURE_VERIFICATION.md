@@ -1,3 +1,15 @@
+# Shared Stallion project — 3 November 2026
+
+DEV and PROD now use the existing `restoflow` project (`6aca880b9f76d8bbbc714eef`)
+and its shared App Token, with `dev` and `prod` upload buckets. This supersedes
+the separate-project mappings in the historical records below. Release environment
+validation and nine infrastructure tests pass. `yarn android:dev:release` built,
+installed and launched on the SM-A176B phone and Pixel 7 Pro emulator. The release
+APK's shared project ID, App Token and compatibility hash were checked.
+Buckets do not isolate automatic
+releases by environment; see [INFRASTRUCTURE.md](INFRASTRUCTURE.md) for the current
+upload and testing workflow. No live OTA upload or promotion was performed.
+
 # Current API integration — 24 October 2026
 
 Runtime mock implementations have been replaced with backend password authentication,

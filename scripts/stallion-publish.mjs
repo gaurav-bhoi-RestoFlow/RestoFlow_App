@@ -48,10 +48,11 @@ export function publishingPlan(args, native, baseline, fingerprint) {
   if (
     segments.length !== 3 ||
     segments.some(value => !/^[A-Za-z0-9_-]+$/.test(value)) ||
-    segments[1] !== mapping.stallionProject
+    segments[1] !== mapping.stallionProject ||
+    segments[2] !== mapping.stallionBucket
   ) {
     throw new Error(
-      'Configure a real upload path targeting the selected Stallion project',
+      'Configure a real upload path targeting the selected Stallion project and bucket',
     );
   }
   if (native.ciToken && native.ciToken === native.appToken)

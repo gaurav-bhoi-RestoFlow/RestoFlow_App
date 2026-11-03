@@ -19,7 +19,7 @@ const args = {
   'app-version': '1.0',
 };
 const native = {
-  uploadPath: 'test-org/restoflow-dev/main',
+  uploadPath: 'test-org/restoflow/dev',
   appToken: '',
   ciToken: '',
 };
@@ -34,16 +34,66 @@ test('DEV publish cannot target a PROD upload path', () => {
     () =>
       publishingPlan(
         args,
-        { ...native, uploadPath: 'test-org/restoflow/main' },
+        { ...native, uploadPath: 'test-org/restoflow/prod' },
         baseline,
         'native-hash',
       ),
-    /selected Stallion project/,
+    /selected Stallion project and bucket/,
   );
   assert.equal(
     publishingPlan(args, native, baseline, 'native-hash').stallionProjectId,
-    '6aca897a03fc44c9897cf2b5',
+    '6aca880b9f76d8bbbc714eef',
   );
+});
+test('publishing rejects another project and an unconfigured bucket', () => {
+  for (const uploadPath of [
+    'test-org/restoflow-dev/dev',
+    'test-org/restoflow/main',
+  ]) {
+    assert.throws(
+      () =>
+        publishingPlan(
+          args,
+          { ...native, uploadPath },
+          baseline,
+          'native-hash',
+        ),
+      /selected Stallion project and bucket/,
+    );
+  }
+});
+test('shared-project release accepts a shared App Token and rejects invalid tokens', () => {
+  assert.equal(
+    getEnvironment('development').stallionProjectId,
+    getEnvironment('production').stallionProjectId,
+  );
+  const overrides = {
+    ENVFILE: '.env.development',
+    STALLION_DEV_APP_TOKEN: `spb_${'a'.repeat(42)}`,
+    STALLION_PROD_APP_TOKEN: `spb_${'a'.repeat(42)}`,
+    STALLION_DEV_PUBLIC_KEY_PATH: '',
+    STALLION_PROD_PUBLIC_KEY_PATH: '',
+  };
+  const previous = Object.fromEntries(
+    Object.keys(overrides).map(key => [key, process.env[key]]),
+  );
+  try {
+    Object.assign(process.env, overrides);
+    assert.equal(
+      validateBuildEnvironment('development', { release: true }).APP_ENV,
+      'development',
+    );
+    process.env.STALLION_DEV_APP_TOKEN = 'invalid';
+    assert.throws(
+      () => validateBuildEnvironment('development', { release: true }),
+      /valid App Token/,
+    );
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });
 test('native dependency/configuration drift blocks OTA', () => {
   assert.throws(
@@ -63,7 +113,7 @@ test('native dependency/configuration drift blocks OTA', () => {
 });
 test('production requires explicit confirmation, DEV verification, and signing', () => {
   const prod = { ...args, env: 'production' };
-  const prodNative = { ...native, uploadPath: 'test-org/restoflow/main' };
+  const prodNative = { ...native, uploadPath: 'test-org/restoflow/prod' };
   const prodBaseline = { ...baseline, environment: 'production' };
   assert.throws(
     () => publishingPlan(prod, prodNative, prodBaseline, 'native-hash'),

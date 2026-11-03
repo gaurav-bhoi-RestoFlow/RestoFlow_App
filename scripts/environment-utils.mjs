@@ -109,11 +109,18 @@ export function validateBuildEnvironment(
           mapping.stallionProject
         } Stallion project.`,
       );
-    const other = nativeValues(
-      environment === 'development' ? 'production' : 'development',
-    );
-    if (native.appToken === other.appToken)
-      throw new Error('DEV and PROD Stallion App Tokens must differ');
+    const otherEnvironment =
+      environment === 'development' ? 'production' : 'development';
+    const other = nativeValues(otherEnvironment);
+    // App Tokens identify a project; buckets within that project share it.
+    if (
+      mapping.stallionProjectId !==
+        getEnvironment(otherEnvironment).stallionProjectId &&
+      native.appToken === other.appToken
+    )
+      throw new Error(
+        'Separate Stallion projects must use different App Tokens',
+      );
     if (environment === 'production' && !native.publicKeyPath)
       throw new Error('Production requires a Stallion public signing key');
     if (native.publicKeyPath) {

@@ -33,7 +33,7 @@ class MainApplication : Application(), ReactApplication {
     check(BuildConfig.APP_ENV == BuildConfig.NATIVE_APP_ENV) { "Native application environment mismatch" }
     val expectedId = if (BuildConfig.NATIVE_APP_ENV == "development") "com.restoflow.dev" else "com.restoflow"
     check(packageName == expectedId) { "Native application identity mismatch" }
-    val expectedProject = if (BuildConfig.NATIVE_APP_ENV == "development") "6aca897a03fc44c9897cf2b5" else "6aca880b9f76d8bbbc714eef"
+    val expectedProject = "6aca880b9f76d8bbbc714eef"
     check(getString(R.string.StallionProjectId) == expectedProject) { "Stallion project mismatch" }
     ReactFontManager.getInstance().addCustomFont(this, "SF Pro Display", R.font.sf_pro_display)
     loadReactNative(this)

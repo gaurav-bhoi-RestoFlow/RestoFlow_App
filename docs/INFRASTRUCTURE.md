@@ -57,8 +57,9 @@ All required packages were accepted. Legacy Redux, redux-persist and react-nativ
 | Android ID          | com.restoflow.dev                        | com.restoflow                                  |
 | iOS bundle ID       | org.reactjs.native.example.RestoFlow.dev | org.reactjs.native.example.RestoFlow           |
 | iOS scheme          | RestoFlowDev                             | RestoFlowProd                                  |
-| Stallion project    | restoflow-dev                            | restoflow                                      |
-| Stallion project ID | 6aca897a03fc44c9897cf2b5                 | 6aca880b9f76d8bbbc714eef                       |
+| Stallion project    | restoflow                                | restoflow                                      |
+| Stallion project ID | 6aca880b9f76d8bbbc714eef                 | 6aca880b9f76d8bbbc714eef                       |
+| Stallion bucket     | dev                                      | prod                                           |
 
 The original production IDs are preserved. The iOS production build setting retains its original `org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)` expression; its resolved value is shown above. `config/environments.json` holds the environment matrix used by Android and release tooling. The committed iOS configs mirror that matrix and are checked by infrastructure tests.
 
@@ -115,7 +116,7 @@ xcodebuild -workspace ios/RestoFlow.xcworkspace -scheme RestoFlowProd \
 ## Configure the real services later
 
 1. Use the pinned API origins in each env file. Keep PROD logging false. `npm run i18n:configure` remains available to update the same native env files using RESTOFLOW_DEV_API_URL/RESTOFLOW_PROD_API_URL.
-2. Copy `.env.stallion.local.example` to ignored `.env.stallion.local`. Add each project's actual App Token and real console bucket upload path. The tokens were not supplied and are currently unconfigured. Do not substitute App Tokens for dedicated CLI/CI tokens.
+2. Copy `.env.stallion.local.example` to ignored `.env.stallion.local`. Set both environment App Tokens to the shared `restoflow` project's App Token. Upload paths are `nexgen/restoflow/dev` and `nexgen/restoflow/prod`. Do not substitute App Tokens for dedicated CLI/CI tokens.
 3. Run `npm run native:configure` to generate the ignored iOS native-only settings. Android reads the ignored local file or the corresponding process variables at build time. Tokens never enter mobile env files or package scripts.
 4. Configure bundle signing before any production release. Use different RSA keys per environment. Run the installed CLI's `generate-key-pair` command in isolated temporary working directories and move only the public PEM to `stallion/public/development.pem` or `stallion/public/production.pem`. Keep private keys in ignored `stallion/secrets/` or the CI secret store. Set the corresponding PUBLIC_KEY_PATH and PRIVATE_KEY entries in the local template. Production native builds require the public key; production uploads require the matching private key. The build embeds the SPKI base64 public body accepted by SDK 2.4.2's native verifiers, avoiding plist newline escaping.
 5. Provide real production Android signing through RESTOFLOW_PROD_KEYSTORE, RESTOFLOW_PROD_STORE_PASSWORD, RESTOFLOW_PROD_KEY_ALIAS, RESTOFLOW_PROD_KEY_PASSWORD. DEV uses the existing debug keystore for internal binaries. Production releases never silently use that key. Configure the iOS development team/provisioning on macOS.
@@ -150,7 +151,9 @@ Stallion uses flavor-specific Android resources and build-setting substitutions 
 
 ## OTA upload and release workflow
 
-Publishing requires a real bucket path copied from the console in the form organization/project/bucket. Paths are currently unset. One existing `main` bucket per project is sufficient if that matches your console; no organization or bucket has been invented or created.
+Publishing uses `nexgen/restoflow/dev` for development and `nexgen/restoflow/prod` for production. Both buckets belong to the same `restoflow` project, so native builds use the same project ID and App Token. The publishing helper rejects the other environment's bucket.
+
+Buckets organize uploads and can be selected in Stallion's internal testing UI. Automatic releases are selected by project, platform and native app version, rather than bucket. Both flavors currently use version `1.0`; bucket names and different application IDs do not isolate promoted releases. Test development uploads by selecting the `dev` bucket without promoting them. Independent automatic DEV/PROD releases require distinct native app versions or separate Stallion projects. See [Stallion Hierarchy](https://stalliontech.io/learn/docs/stallion-hierarchy).
 
 First build and test an actual DEV Release APK and DEV iOS Release/internal/TestFlight binary. Record each tested binary's native baseline:
 
@@ -177,15 +180,15 @@ npm run ota:prod:ios -- --notes="Fix editable billing quantity validation" \
   --app-version=1.0 --confirm-production=restoflow --dev-verified
 ```
 
-Add `--dry-run` for local validation without upload; it still requires complete configuration and a matching baseline. Scripts lock upload paths to the chosen project name/ID, require useful notes and an exact app version, and reject changed native baselines. Production also requires deliberate confirmation, reported DEV verification and matching signing keys. App Tokens are rejected as CI credentials, output is redacted, and no credentials are embedded in commands in package.json. This helper uploads only; promotion/distribution is a separate deliberate action in the console, targeted at the exact recorded native app version. Never directly promote a DEV bundle into PROD.
+Add `--dry-run` for local validation without upload; it still requires complete configuration and a matching baseline. Scripts lock upload paths to the configured project and environment bucket, require useful notes and an exact app version, and reject changed native baselines. Production also requires deliberate confirmation, reported DEV verification and matching signing keys. App Tokens are rejected as CI credentials, output is redacted, and no credentials are embedded in commands in package.json. This helper uploads only; promotion/distribution is a separate deliberate action in the console, targeted at the exact recorded native app version. Never promote a DEV bundle as a production release.
 
 CLI 2.5.1 enables Hermes by default, matching the binary. `--sourcemap` optionally generates private source maps with kept artifacts for a future error-monitoring upload; no monitoring service currently exists. Artifacts are ignored and must not be publicly hosted. No alpha CLI commands are used.
 
-After DEV upload, promote in **restoflow-dev**, target the installed native version, use 100% DEV rollout, foreground the app, allow download, then restart as required and verify a tiny JS-only change. Repeat on Android and iOS. Verify the production project stayed untouched.
+After DEV upload, select the **dev** bucket in Stallion's internal testing UI, download the bundle, restart as required and verify a tiny JS-only change. Repeat on Android and iOS. Leave development bundles unpromoted while DEV and PROD share the same native app version.
 
 Before PROD upload, confirm API origin, native identities, project ID and signing key in the actual PROD binary. Promote in **restoflow**, target its exact native version and use internal verification followed by an appropriate rollout such as 5% → 20% → 50% → 100%. Monitor adoption/crashes before increasing. Normal releases are non-mandatory.
 
-Mandatory real isolation acceptance: with DEV installed, publish/promote a distinct PROD test release and confirm DEV does not download it; publish DEV and confirm DEV receives it. Verify the inverse with an internal PROD binary. Dashboard/project isolation and actual devices must be checked. Device OTA acceptance remains separate; no live upload/promotion was performed.
+For independent automatic release acceptance, first configure distinct native app versions or separate projects. Bucket upload validation does not establish runtime release isolation. Device OTA acceptance remains separate; no live upload/promotion was performed.
 
 ### Recovery
 
