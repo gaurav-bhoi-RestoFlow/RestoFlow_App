@@ -103,7 +103,11 @@ export function validateBuildEnvironment(
     const native = nativeValues(environment);
     if (!isAppToken(native.appToken))
       throw new Error(
-        'A real environment-specific Stallion App Token is required',
+        `Set ${
+          environment === 'development' ? 'STALLION_DEV' : 'STALLION_PROD'
+        }_APP_TOKEN in .env.stallion.local (or the build environment) to a valid App Token for the ${
+          mapping.stallionProject
+        } Stallion project.`,
       );
     const other = nativeValues(
       environment === 'development' ? 'production' : 'development',

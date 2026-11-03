@@ -90,4 +90,9 @@ the user's wallpaper palette. Icon changes require a native rebuild and reinstal
 
 Release builds bundle JavaScript into the app and require real signing and environment-specific Stallion configuration. Adding secure credential storage requires a native rebuild; an OTA update alone is insufficient. On macOS, reinstall CocoaPods before building iOS.
 
+Before running `yarn android:dev:release`, copy `.env.stallion.local.example` to
+`.env.stallion.local` and set `STALLION_DEV_APP_TOKEN` to the App Token from the
+`restoflow-dev` Stallion project. This file is ignored by Git. You can check the
+configuration with `node scripts/validate-environment.mjs development --release`.
+
 See [docs/INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) for exact versions, setup, native identities, signing, OTA publishing, rollout and rollback. [docs/INFRASTRUCTURE_VERIFICATION.md](docs/INFRASTRUCTURE_VERIFICATION.md) records completed checks, remaining checks, and the implementation file list.
